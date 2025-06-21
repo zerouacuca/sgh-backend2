@@ -1,0 +1,41 @@
+# === Geral ===
+*.log
+*.tmp
+*.swp
+*.bak
+.DS_Store
+Thumbs.db
+.env
+
+# === Node.js (api-gateway) ===
+/api-gateway/node_modules/
+/api-gateway/dist/
+
+# === Maven e Java (Spring Boot services) ===
+**/target/
+**/.classpath
+**/.project
+**/.settings/
+**/.idea/
+**/*.iml
+
+# === IntelliJ ===
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# === VSCode ===
+.vscode/
+
+# === Docker ===
+**/Dockerfile
+
+# === Logs ===
+logs/
+*.log
+*.out
+
+# === Banco de dados ===
+*.mv.db
+*.h2.db
