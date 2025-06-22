@@ -19,8 +19,8 @@ public class TransacaoPonto {
 
     private String origem; // exemplo: "consulta", "admin", etc.
 
-    private String tipo;   // "credito" ou "debito"
-
+    @Enumerated(EnumType.STRING)
+    private TipoTransacao tipo;
     private int valor;
 
     private LocalDateTime dataHora;

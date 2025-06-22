@@ -1,3 +1,10 @@
+package com.sgh.ms_consulta.model;
+
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+import lombok.*;
+
 @Entity
 @Data
 @NoArgsConstructor

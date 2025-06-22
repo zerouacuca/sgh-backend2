@@ -1,6 +1,7 @@
 package com.sgh.ms_paciente.service;
 
 import com.sgh.ms_paciente.model.Paciente;
+import com.sgh.ms_paciente.model.TipoTransacao;
 import com.sgh.ms_paciente.model.TransacaoPonto;
 import com.sgh.ms_paciente.repository.PacienteRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -57,9 +58,9 @@ public class PacienteService {
     public Paciente adicionarTransacao(Long pacienteId, TransacaoPonto transacao) {
         Paciente paciente = buscarPorId(pacienteId);
 
-        if (transacao.getTipo().equalsIgnoreCase("credito")) {
+        if (transacao.getTipo() == TipoTransacao.CREDITO) {
             paciente.setSaldoPontos(paciente.getSaldoPontos() + transacao.getValor());
-        } else if (transacao.getTipo().equalsIgnoreCase("debito")) {
+        } else if (transacao.getTipo() == TipoTransacao.DEBITO) {
             paciente.setSaldoPontos(paciente.getSaldoPontos() - transacao.getValor());
         }
 
