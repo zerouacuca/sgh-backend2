@@ -15,7 +15,11 @@ const authorize = require('./middleware/authorization');
 const authorizeByMethod = require('./middleware/authorizationByMethod');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:4200'], // ou outras origens autorizadas
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // R01/R02 - Autenticação e cadastro de paciente
