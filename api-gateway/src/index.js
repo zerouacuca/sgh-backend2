@@ -9,86 +9,87 @@ const especialidadesRoutes = require('./routes/especialidades');
 const profissionaisRoutes = require('./routes/profissionais');
 const salasRoutes = require('./routes/salas');
 const agendamentosPacienteRoutes = require('./routes/agendamentosPaciente');
-const pacientesPublicRouter = require('./routes/pacientesPublic');
-const pacientesProtectedRouter = require('./routes/pacientesProtected');
+const pacientesRoutes = require('./routes/pacientes');
 
-const authorize = require('./middleware/authorization'); // autorização simples por perfil
-const authorizeByMethod = require('./middleware/authorizationByMethod'); // autorização por método HTTP
+const authorize = require('./middleware/authorization');
+const authorizeByMethod = require('./middleware/authorizationByMethod');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rotas públicas (auth)
+// R01/R02 - Autenticação e cadastro de paciente
 app.use('/auth', authRoutes);
 
-// Consultas - acesso amplo para todos os perfis
+// R03/R05/R06/R07 - Consultas (visualização e manipulação)
 app.use(
   '/consultas',
-  authorize(['ADMIN', 'RECEPCAO', 'MEDICO', 'PACIENTE']),
+  authorizeByMethod({
+    GET: ['PACIENTE', 'FUNCIONARIO'],
+    POST: ['FUNCIONARIO'],       // R12 - Criar consulta
+    PUT: ['FUNCIONARIO']         // R09, R10, R11 - Confirmar, cancelar, realizar
+  }),
   consultasRoutes
 );
 
-// Agendamentos - acesso mais restrito
+// R08~R11 - Agendamentos: apenas funcionários manipulam diretamente
 app.use(
   '/agendamentos',
-  authorize(['ADMIN', 'RECEPCAO', 'MEDICO']),
+  authorize(['FUNCIONARIO']),
   agendamentosRoutes
 );
 
-// Especialidades - controle refinado por método HTTP
-app.use(
-  '/especialidades',
-  authorizeByMethod({
-    GET: ['ADMIN', 'RECEPCAO', 'MEDICO', 'PACIENTE'],
-    POST: ['ADMIN'],
-    DELETE: ['ADMIN'],
-  }),
-  especialidadesRoutes
-);
-
-// Profissionais - controle refinado por método HTTP
-app.use(
-  '/profissionais',
-  authorizeByMethod({
-    GET: ['ADMIN', 'RECEPCAO', 'MEDICO', 'PACIENTE'],
-    POST: ['ADMIN'],
-    DELETE: ['ADMIN'],
-  }),
-  profissionaisRoutes
-);
-
-// Salas - controle refinado por método HTTP
-app.use(
-  '/salas',
-  authorizeByMethod({
-    GET: ['ADMIN', 'RECEPCAO', 'MEDICO', 'PACIENTE'],
-    POST: ['ADMIN'],
-    DELETE: ['ADMIN']
-  }),
-  salasRoutes
-);
-
-// Agendamentos ms-paciente - só pacientes podem agendar
+// R05 - Paciente agenda consulta
 app.use(
   '/agendamentos-paciente',
   authorize(['PACIENTE']),
   agendamentosPacienteRoutes
 );
 
+// R13~R15 - CRUD de profissionais
+app.use(
+  '/profissionais',
+  authorizeByMethod({
+    GET: ['PACIENTE', 'FUNCIONARIO'],
+    POST: ['FUNCIONARIO'],
+    DELETE: ['FUNCIONARIO']
+  }),
+  profissionaisRoutes
+);
 
-// Pacientes públicos: cadastro e busca por CPF/email
-app.use('/pacientes', pacientesPublicRouter);
-// Pacientes protegidos: edição, exclusão, transações
+// R12 - CRUD de salas
+app.use(
+  '/salas',
+  authorizeByMethod({
+    GET: ['PACIENTE', 'FUNCIONARIO'],
+    POST: ['FUNCIONARIO'],
+    DELETE: ['FUNCIONARIO']
+  }),
+  salasRoutes
+);
+
+// R05 - Listagem e filtro de especialidades
+app.use(
+  '/especialidades',
+  authorizeByMethod({
+    GET: ['PACIENTE', 'FUNCIONARIO'],
+    POST: ['FUNCIONARIO'],
+    DELETE: ['FUNCIONARIO']
+  }),
+  especialidadesRoutes
+);
+
+// R01 - Cadastro público de paciente
+// R03/R04/R06 - Manipulação de pontos, histórico, etc.
 app.use(
   '/pacientes',
   authorizeByMethod({
-    GET: ['ADMIN', 'RECEPCAO'], // /pacientes, /pacientes/:id
-    PUT: ['ADMIN'],
-    DELETE: ['ADMIN'],
-    POST: ['ADMIN'], // para /pacientes/:id/transacoes
+    GET: ['PACIENTE', 'FUNCIONARIO'],
+    POST: [], // Cadastro público
+    PUT: ['FUNCIONARIO'],
+    DELETE: ['FUNCIONARIO']
   }),
-  pacientesProtectedRouter
+  pacientesRoutes
 );
 
 const PORT = process.env.PORT || 8080;
