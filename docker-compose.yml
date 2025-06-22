@@ -69,6 +69,30 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
 
+  db-ms_consulta:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: sgh-consultas
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5435:5432"
+    volumes:
+      - dbdata-ms_consulta:/var/lib/postgresql/data
+
+  ms-consulta:
+    build:
+      context: ./ms-consulta
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-ms_consulta:5432/sgh-consultas
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    depends_on:
+      - db-ms_consulta
+
 volumes:
   dbdata-ms_autenticacao:
   dbdata-ms_paciente:
+  dbdata-ms_consulta:
