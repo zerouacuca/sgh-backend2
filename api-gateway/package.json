@@ -1,13 +1,14 @@
 {
   "name": "api-gateway",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API Gateway para SGH Backend 2",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Equipe SGH",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -16,5 +17,8 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

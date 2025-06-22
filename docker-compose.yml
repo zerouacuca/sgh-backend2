@@ -1,6 +1,22 @@
 version: '3.9'
 
 services:
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # Endereços dos microsserviços
+      AUTH_SERVICE_URL: http://ms-autenticacao:8082
+      USER_SERVICE_URL: http://ms-paciente:8081
+      APPOINTMENT_SERVICE_URL: http://ms-consulta:8083
+    depends_on:
+      - ms-autenticacao
+      - ms-paciente
+      - ms-consulta
+
   db-ms_autenticacao:
     image: postgres:15
     environment:
