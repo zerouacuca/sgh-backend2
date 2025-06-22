@@ -9,7 +9,8 @@ const especialidadesRoutes = require('./routes/especialidades');
 const profissionaisRoutes = require('./routes/profissionais');
 const salasRoutes = require('./routes/salas');
 const agendamentosPacienteRoutes = require('./routes/agendamentosPaciente');
-const pacientesRoutes = require('./routes/pacientes');
+const pacientesPublicRouter = require('./routes/pacientesPublic');
+const pacientesProtectedRouter = require('./routes/pacientesProtected');
 
 const authorize = require('./middleware/authorization'); // autorização simples por perfil
 const authorizeByMethod = require('./middleware/authorizationByMethod'); // autorização por método HTTP
@@ -75,15 +76,19 @@ app.use(
   agendamentosPacienteRoutes
 );
 
-// Pacientes - controle refinado por método HTTP
+
+// Pacientes públicos: cadastro e busca por CPF/email
+app.use('/pacientes', pacientesPublicRouter);
+// Pacientes protegidos: edição, exclusão, transações
 app.use(
   '/pacientes',
   authorizeByMethod({
-    GET: ['ADMIN', 'RECEPCAO'],
+    GET: ['ADMIN', 'RECEPCAO'], // /pacientes, /pacientes/:id
     PUT: ['ADMIN'],
-    DELETE: ['ADMIN']
+    DELETE: ['ADMIN'],
+    POST: ['ADMIN'], // para /pacientes/:id/transacoes
   }),
-  pacientesRoutes
+  pacientesProtectedRouter
 );
 
 const PORT = process.env.PORT || 8080;
