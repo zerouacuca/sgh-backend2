@@ -2,6 +2,7 @@ package com.sgh.ms_consulta.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -22,7 +23,7 @@ public class Agendamento {
 
     @ManyToOne
     @JoinColumn(name = "consulta_id")
-    @JsonIgnore
+    @JsonBackReference
     private Consulta consulta;
 
     @Enumerated(EnumType.STRING)
