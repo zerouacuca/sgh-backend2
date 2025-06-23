@@ -2,6 +2,8 @@ package com.sgh.ms_consulta.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +22,7 @@ public class Agendamento {
 
     @ManyToOne
     @JoinColumn(name = "consulta_id")
+    @JsonIgnore
     private Consulta consulta;
 
     @Enumerated(EnumType.STRING)
