@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "usuarios")
-@Data
+@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Usuario {
 
     @Id
@@ -28,5 +28,12 @@ public class Usuario {
     @Column(nullable = false)
     private Perfil perfil;
 
-    // outros campos se desejar, ex: nome, etc
+    @Column(nullable = false)
+    private String nome;
+
+    @Column(unique = true, nullable = false)
+    private String cpf;
+
+    // Outros campos e métodos, se desejar
 }
+

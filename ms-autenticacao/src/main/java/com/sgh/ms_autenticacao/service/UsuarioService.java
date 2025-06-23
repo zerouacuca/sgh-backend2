@@ -24,7 +24,7 @@ public class UsuarioService {
     @Autowired
     private JwtService jwtService;  // <-- injetar aqui
 
-    public Usuario registrarUsuario(String email, Perfil perfil) {
+    public Usuario registrarUsuario(String email, Perfil perfil, String nome, String cpf) {
         String senha = senhaService.gerarSenhaAleatoria();
         String salt = hashService.gerarSalt();
         String senhaHash = hashService.hashSenha(senha, salt);
@@ -34,6 +34,8 @@ public class UsuarioService {
                 .perfil(perfil)
                 .salt(salt)
                 .senhaHash(senhaHash)
+                .nome(nome)
+                .cpf(cpf)
                 .build();
 
         usuarioRepository.save(usuario);
@@ -43,6 +45,7 @@ public class UsuarioService {
 
         return usuario;
     }
+
 
     public String login(String email, String senhaDigitada) {
         Usuario usuario = usuarioRepository.findByEmail(email)

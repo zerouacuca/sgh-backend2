@@ -28,11 +28,17 @@ public class RabbitMQSenderService {
 
     public void sendUsuarioNovo(Paciente paciente) {
         try {
-            Map<String, String> payload = Map.of("email", paciente.getEmail());
+            Map<String, Object> payload = Map.of(
+                "email", paciente.getEmail(),
+                "nome", paciente.getNome(),
+                "cpf", paciente.getCpf(),
+                "perfil", "PACIENTE"  // ou outro perfil padrão adequado
+            );
             String json = objectMapper.writeValueAsString(payload);
             rabbitTemplate.convertAndSend(exchange, routingKey, json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Erro ao converter paciente para JSON", e);
         }
     }
+
 }

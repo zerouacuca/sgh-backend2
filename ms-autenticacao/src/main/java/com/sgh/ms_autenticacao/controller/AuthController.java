@@ -1,5 +1,6 @@
 package com.sgh.ms_autenticacao.controller;
 
+import com.sgh.ms_autenticacao.dto.NovoUsuarioDTO;
 import com.sgh.ms_autenticacao.model.Perfil;
 import com.sgh.ms_autenticacao.service.JwtService;
 import com.sgh.ms_autenticacao.service.UsuarioService;
@@ -20,10 +21,16 @@ public class AuthController {
     private JwtService jwtService;
 
    @PostMapping("/register")
-    public ResponseEntity<?> registrar(@RequestBody RegistroRequest request) {
-        usuarioService.registrarUsuario(request.getEmail(), request.getPerfil());
+    public ResponseEntity<?> registrar(@RequestBody NovoUsuarioDTO request) {
+        usuarioService.registrarUsuario(
+            request.getEmail(), 
+            Perfil.valueOf(request.getPerfil()), // converte string para enum, se estiver assim
+            request.getNome(), 
+            request.getCpf()
+        );
         return ResponseEntity.ok("Usuário registrado com sucesso");
     }
+
 
 
     @PostMapping("/login")
