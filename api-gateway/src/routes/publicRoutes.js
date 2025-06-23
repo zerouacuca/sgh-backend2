@@ -8,17 +8,6 @@ const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;           // URL do ms-au
 // === ms-autenticacao endpoints ===
 // =============================
 
-// POST /auth/register : Registrar usuário
-router.post('/auth/register', async (req, res) => {
-  try {
-    const response = await axios.post(`${AUTH_SERVICE_URL}/auth/register`, req.body);
-    res.status(response.status).send(response.data);
-  } catch (error) {
-    console.error("Erro ao registrar usuário:", error.message);
-    res.status(error.response?.status || 500).send("Erro ao registrar usuário.");
-  }
-});
-
 // POST /auth/login : Login e geração de token JWT
 router.post('/auth/login', async (req, res) => {
   try {
