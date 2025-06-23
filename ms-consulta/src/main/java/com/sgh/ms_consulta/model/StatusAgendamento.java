@@ -1,6 +1,10 @@
 package com.sgh.ms_consulta.model;
 
 public enum StatusAgendamento {
-    AGENDADO,
-    CANCELADO
+    CRIADO,
+    CANCELADO,
+    CHECKIN,
+    COMPARECEU,
+    FALTOU,
+    REALIZADO
 }

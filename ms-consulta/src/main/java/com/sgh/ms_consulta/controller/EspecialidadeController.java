@@ -1,6 +1,7 @@
 package com.sgh.ms_consulta.controller;
 
 import com.sgh.ms_consulta.model.Especialidade;
+import com.sgh.ms_consulta.model.StatusProfissional;
 import com.sgh.ms_consulta.service.EspecialidadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,4 +36,5 @@ public class EspecialidadeController {
         especialidadeService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
 }

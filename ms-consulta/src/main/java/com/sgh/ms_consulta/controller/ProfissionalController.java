@@ -1,6 +1,7 @@
 package com.sgh.ms_consulta.controller;
 
 import com.sgh.ms_consulta.model.Profissional;
+import com.sgh.ms_consulta.model.StatusProfissional;
 import com.sgh.ms_consulta.service.ProfissionalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,12 @@ import java.util.List;
 public class ProfissionalController {
 
     private final ProfissionalService profissionalService;
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<String> alterarStatus(@PathVariable Long id, @RequestParam StatusProfissional status) {
+        String resposta = profissionalService.alterarStatus(id, status);
+        return ResponseEntity.ok(resposta);
+    }
 
     @PostMapping
     public ResponseEntity<Profissional> criar(@RequestBody Profissional profissional) {
@@ -34,5 +41,10 @@ public class ProfissionalController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         profissionalService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<StatusProfissional[]> listarStatusProfissional() {
+        return ResponseEntity.ok(StatusProfissional.values());
     }
 }

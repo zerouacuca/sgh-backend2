@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,6 +21,7 @@ public class Consulta {
 
     private Integer valorEmPontos;
     private Integer vagasDisponiveis;
+    private Integer totalVagas;
 
     @Enumerated(EnumType.STRING)
     private StatusConsulta status;
@@ -28,8 +30,8 @@ public class Consulta {
     private Profissional profissional;
 
     @ManyToOne
-    private Sala sala;
-
-    @ManyToOne
     private Especialidade especialidade;
+
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Agendamento> agendamentos;
 }

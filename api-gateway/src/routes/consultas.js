@@ -4,10 +4,10 @@ const axios = require('axios');
 const router = express.Router();
 const APPOINTMENT_SERVICE_URL = process.env.APPOINTMENT_SERVICE_URL;
 
-// POST /consultas/agendar
-router.post('/agendar', async (req, res) => {
+// POST /consultas/criar
+router.post('/criar', async (req, res) => {
   try {
-    const response = await axios.post(`${APPOINTMENT_SERVICE_URL}/consultas/agendar`, req.body);
+    const response = await axios.post(`${APPOINTMENT_SERVICE_URL}/consultas/criar`, req.body);
     res.status(response.status).json(response.data);
   } catch (error) {
     res.status(error.response?.status || 500).json(error.response?.data || { error: 'Erro ao agendar consulta' });

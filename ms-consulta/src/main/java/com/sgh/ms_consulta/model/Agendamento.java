@@ -10,17 +10,20 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ConsultaAgendamento {
+public class Agendamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long pacienteId; // vindo do ms-paciente
-    private Long consultaId;
+
+    @ManyToOne
+    @JoinColumn(name = "consulta_id")
+    private Consulta consulta;
 
     @Enumerated(EnumType.STRING)
-    private StatusAgendamento status; // AGENDADO, CANCELADO
+    private StatusAgendamento status;
 
     private LocalDateTime dataHora;
 }

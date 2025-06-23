@@ -3,9 +3,9 @@ package com.sgh.ms_consulta.listener;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgh.ms_consulta.model.Consulta;
-import com.sgh.ms_consulta.model.ConsultaAgendamento;
+import com.sgh.ms_consulta.model.Agendamento;
 import com.sgh.ms_consulta.model.StatusAgendamento;
-import com.sgh.ms_consulta.repository.ConsultaAgendamentoRepository;
+import com.sgh.ms_consulta.repository.AgendamentoRepository;
 import com.sgh.ms_consulta.repository.ConsultaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class ConsultaEventListener {
 
     private final ConsultaRepository consultaRepository;
-    private final ConsultaAgendamentoRepository agendamentoRepository;
+    private final AgendamentoRepository agendamentoRepository;
     private final ObjectMapper objectMapper;
 
     @RabbitListener(queues = "${sgh.rabbitmq.queue.consulta}")
@@ -37,11 +37,11 @@ public class ConsultaEventListener {
                 consulta.setVagasDisponiveis(consulta.getVagasDisponiveis() - 1);
                 consultaRepository.save(consulta);
 
-                ConsultaAgendamento agendamento = ConsultaAgendamento.builder()
+                Agendamento agendamento = Agendamento.builder()
                         .pacienteId(pacienteId)
-                        .consultaId(consultaId)
+                        .consulta(consulta)  // <-- aqui está a mudança
                         .dataHora(LocalDateTime.now())
-                        .status(StatusAgendamento.AGENDADO)
+                        .status(StatusAgendamento.CRIADO)
                         .build();
 
                 agendamentoRepository.save(agendamento);

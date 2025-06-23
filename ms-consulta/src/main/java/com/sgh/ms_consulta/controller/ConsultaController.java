@@ -15,9 +15,21 @@ public class ConsultaController {
 
     private final ConsultaService consultaService;
 
-    @PostMapping("/agendar")
-    public ResponseEntity<Consulta> agendar(@RequestBody Consulta consulta) {
-        return ResponseEntity.ok(consultaService.agendar(consulta));
+    @GetMapping("/profissional/{profissionalId}")
+    public ResponseEntity<List<Consulta>> listarPorProfissional(@PathVariable Long profissionalId) {
+        List<Consulta> consultas = consultaService.listarPorProfissional(profissionalId);
+        return ResponseEntity.ok(consultas);
+    }
+
+    @GetMapping("/especialidade/{especialidadeId}")
+    public ResponseEntity<List<Consulta>> listarPorEspecialidade(@PathVariable Long especialidadeId) {
+        List<Consulta> consultas = consultaService.listarPorEspecialidade(especialidadeId);
+        return ResponseEntity.ok(consultas);
+    }
+
+    @PostMapping("/criar")
+    public ResponseEntity<Consulta> criar(@RequestBody Consulta consulta) {
+        return ResponseEntity.ok(consultaService.criarConsulta(consulta));
     }
 
     @PutMapping("/{id}/cancelar")
@@ -25,14 +37,9 @@ public class ConsultaController {
         return ResponseEntity.ok(consultaService.cancelar(id));
     }
 
-    @PutMapping("/{id}/check-in")
-    public ResponseEntity<Consulta> checkIn(@PathVariable Long id) {
-        return ResponseEntity.ok(consultaService.checkIn(id));
-    }
-
-    @PutMapping("/{id}/realizar")
-    public ResponseEntity<Consulta> realizar(@PathVariable Long id) {
-        return ResponseEntity.ok(consultaService.realizar(id));
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<Consulta> finalizar(@PathVariable Long id) {
+        return ResponseEntity.ok(consultaService.finalizarConsulta(id));
     }
 
     @GetMapping("/{id}")
@@ -44,4 +51,13 @@ public class ConsultaController {
     public ResponseEntity<List<Consulta>> listarTodas() {
         return ResponseEntity.ok(consultaService.listarTodas());
     }
+
+    // Endpoint para listar consultas nas próximas 48 horas
+    @GetMapping("/proximas48h")
+    public ResponseEntity<List<Consulta>> listarConsultasProximas48h() {
+        List<Consulta> consultas = consultaService.listarConsultasProximas48h();
+        return ResponseEntity.ok(consultas);
+    }
+
+    
 }
