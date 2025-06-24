@@ -54,4 +54,10 @@ public class AgendamentoController {
         return ResponseEntity.ok(mensagem);
     }
 
+    @PostMapping("/checkin/{agendamentoId}")
+    public ResponseEntity<String> fazerCheckIn(@PathVariable Long agendamentoId) {
+        String mensagem = agendamentoService.fazerCheckIn(agendamentoId);
+        return ResponseEntity.ok(mensagem);
+    }
+
 }

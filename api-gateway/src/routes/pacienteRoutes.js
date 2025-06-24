@@ -41,6 +41,19 @@ router.post('/pacientes/:id/transacoes', async (req, res) => {
   }
 });
 
+// POST /agendamentos/:id/checkin : Realizar check-in no agendamento
+router.post('/checkin/:agendamentoId', async (req, res) => {
+  const { agendamentoId } = req.params;
+  try {
+    const response = await axios.post(`${APPOINTMENT_SERVICE_URL}/checkin/${agendamentoId}`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Erro ao realizar check-in:", error.message);
+    res.status(error.response?.status || 500).send("Erro ao realizar check-in.");
+  }
+});
+
+
 
 // =============================
 // === ms-consulta endpoints ===

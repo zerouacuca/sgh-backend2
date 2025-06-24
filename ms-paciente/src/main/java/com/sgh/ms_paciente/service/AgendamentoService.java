@@ -13,6 +13,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -33,22 +34,33 @@ public class AgendamentoService {
     @Value("${rabbitmq.routingkey.agendamento}")
     private String routingKeyAgendamento;
 
-    @Transactional
+   @Transactional
     public String agendarConsulta(AgendamentoRequest request) throws JsonProcessingException {
+        // Verifica se o paciente existe
         Paciente paciente = pacienteRepository.findById(request.getPacienteId())
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
+        // 🔎 Verifica se a consulta existe no ms-consulta
+        String consultaUrl = "http://ms-consulta:8083/consultas/" + request.getConsultaId();
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            restTemplate.getForEntity(consultaUrl, Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Consulta não encontrada");
+        }
+
         // Verifique se paciente tem pontos suficientes
-        int valorConsulta = 30; // Ou busque de outra forma o valor da consulta
+        int valorConsulta = 30; // Ideal: pegar isso da consulta (se retornado no endpoint)
         if (paciente.getSaldoPontos() < valorConsulta) {
             return "Pontos insuficientes para agendar a consulta.";
         }
 
-        // Debitar pontos
+        // Debita os pontos
         paciente.setSaldoPontos(paciente.getSaldoPontos() - valorConsulta);
         pacienteRepository.save(paciente);
 
-        // Registrar transação
+        // Registra a transação
         TransacaoPonto transacao = TransacaoPonto.builder()
                 .paciente(paciente)
                 .dataHora(LocalDateTime.now())
@@ -58,7 +70,7 @@ public class AgendamentoService {
                 .build();
         transacaoPontoRepository.save(transacao);
 
-        // Montar evento para ms-consulta
+        // Envia evento para o ms-consulta
         Map<String, Object> evento = new HashMap<>();
         evento.put("pacienteId", paciente.getId());
         evento.put("consultaId", request.getConsultaId());
@@ -68,4 +80,5 @@ public class AgendamentoService {
 
         return "Agendamento solicitado com sucesso, aguardando confirmação.";
     }
+
 }
