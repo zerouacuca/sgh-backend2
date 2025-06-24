@@ -1,0 +1,35 @@
+header {
+  background-color: #b0d4f1;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+}
+
+.navbar-nav {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.sair-btn {
+  width: 120px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilo do título-link */
+.titulo-link {
+  font-size: 2rem;
+  font-weight: bold;
+  color:#415a77 ; 
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.titulo-link:hover {
+  color:#093eeb; 
+  text-decoration: none;
+}

@@ -1,0 +1,47 @@
+button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+button.confirmar {
+  background-color: #28a745; /* Verde */
+}
+
+button.cancelar {
+  background-color: #dc3545; /* Vermelho */
+}
+
+button.realizada {
+  background-color: #455a64; /* Cinza escuro */
+}
+
+.title-table {
+  margin-bottom: 20px;
+}
+
+.container {
+  padding: 20px;
+}
+
+/* Botão grande para status alterados */
+button.status {
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: default;
+}
+
+button.status.compareceu {
+  background-color: #28a745; /* Verde */
+}
+
+button.status.cancelada {
+  background-color: #dc3545; /* Vermelho */
+}
+
+button.status.realizada {
+  background-color: #455a64; /* Cinza escuro */
+}

@@ -1,0 +1,34 @@
+<header>
+  <div class="navbar navbar-expand-lg p-4 justify-content-between">
+    <!-- Logo / Título com link -->
+    <a class="navbar-brand titulo-link" [routerLink]="['/funcionario']">
+      Sistema Gestão Hospitalar
+    </a>
+
+    <!-- Centralizar os Dropdowns -->
+    <div class="d-flex justify-content-center flex-grow-1 gap-4">
+      <!-- Cadastrar -->
+      <div ngbDropdown class="nav-item dropdown mx-1">
+        <a class="nav-link dropdown-toggle" ngbDropdownToggle>Cadastrar</a>
+        <div ngbDropdownMenu>
+          <a class="dropdown-item" [routerLink]="['/cadastrar-consulta']">Cadastrar Consulta</a>
+          <a class="dropdown-item" [routerLink]="['/funcionario/cadastrar']">Cadastrar Funcionário</a>
+        </div>
+      </div>
+
+      <!-- Registros -->
+      <div ngbDropdown class="nav-item dropdown mx-5">
+        <a class="nav-link dropdown-toggle" ngbDropdownToggle>Registros</a>
+        <div ngbDropdownMenu>
+          <a class="dropdown-item" [routerLink]="['/funcionario/lista']">Lista de Funcionários</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botão Sair -->
+    <a class="btn btn-danger sair-btn" [routerLink]="['/login']">
+      <i class="fas fa-sign-out-alt me-2"></i> Sair
+    </a>
+  </div>
+</header>
+

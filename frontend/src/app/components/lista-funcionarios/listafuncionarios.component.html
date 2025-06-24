@@ -1,0 +1,40 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="container">
+  <h3 class="title-table">Lista de Funcionários</h3>
+
+  <table class="table table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let funcionario of funcionarios">
+        <td>{{ funcionario.nome }}</td>
+        <td>{{ funcionario.cpf }}</td>
+        <td>{{ funcionario.email }}</td>
+        <td>{{ funcionario.telefone }}</td>
+        <td>
+          <span [ngClass]="{'status-ativo': funcionario.status === 'ATIVO', 'status-inativo': funcionario.status === 'INATIVO'}">
+            {{ funcionario.status }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm confirmar" (click)="atualizar(funcionario)">Atualizar</button>
+
+          <button
+            class="btn btn-sm"
+            [ngClass]="funcionario.status === 'ATIVO' ? 'cancelar' : 'ativar'"
+            (click)="toggleStatus(funcionario)">
+            {{ funcionario.status === 'ATIVO' ? 'Inativar' : 'Ativar' }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

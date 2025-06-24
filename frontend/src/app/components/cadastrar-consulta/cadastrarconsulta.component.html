@@ -1,0 +1,103 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="container">
+  <div class="card">
+    <form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+      <h2>Cadastro de Consulta</h2>
+
+      <div class="form-group mb-3">
+        <label for="dataHora">Data e Hora</label>
+        <input
+          type="text"
+          id="dataHora"
+          name="dataHora"
+          [(ngModel)]="consulta.dataHora"
+          required
+          mask="00/00/0000 00:00"
+          placeholder="dd/mm/aaaa hh:mm"
+          class="form-control"
+          #dataHora="ngModel"
+        />
+        <div *ngIf="dataHora.invalid && (dataHora.dirty || dataHora.touched)" class="text-danger">
+          <small *ngIf="dataHora.errors?.['required']">Data e hora são obrigatórias.</small>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="especialidade">Especialidade</label>
+        <select
+          id="especialidade"
+          name="especialidade"
+          [(ngModel)]="consulta.especialidade"
+          required
+          class="form-control"
+          #especialidade="ngModel"
+        >
+          <option value="" disabled selected>Selecione</option>
+          <option *ngFor="let esp of especialidades" [value]="esp">{{ esp }}</option>
+        </select>
+        <div *ngIf="especialidade.invalid && (especialidade.dirty || especialidade.touched)" class="text-danger">
+          <small *ngIf="especialidade.errors?.['required']">Especialidade é obrigatória.</small>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="medico">Médico</label>
+        <input
+          type="text"
+          id="medico"
+          name="medico"
+          [(ngModel)]="consulta.medico"
+          required
+          class="form-control"
+          #medico="ngModel"
+        />
+        <div *ngIf="medico.invalid && (medico.dirty || medico.touched)" class="text-danger">
+          <small *ngIf="medico.errors?.['required']">Nome do médico é obrigatório.</small>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="valor">Valor Pontos</label>
+        <input
+          type="text"
+          id="valor"
+          name="valor"
+          [(ngModel)]="consulta.valor"
+          required
+          mask="separator.2"
+          thousandSeparator="."
+          decimalMarker=","
+          prefix="R$ "
+          class="form-control"
+          #valor="ngModel"
+        />
+        <div *ngIf="valor.invalid && (valor.dirty || valor.touched)" class="text-danger">
+          <small *ngIf="valor.errors?.['required']">Valor é obrigatório.</small>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="vagas">Nº de Vagas</label>
+        <input
+          type="number"
+          id="vagas"
+          name="vagas"
+          [(ngModel)]="consulta.vagas"
+          required
+          min="1"
+          class="form-control"
+          #vagas="ngModel"
+        />
+        <div *ngIf="vagas.invalid && (vagas.dirty || vagas.touched)" class="text-danger">
+          <small *ngIf="vagas.errors?.['required']">Número de vagas é obrigatório.</small>
+          <small *ngIf="vagas.errors?.['min']">Deve ser pelo menos 1 vaga.</small>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Cadastrar</button>
+        <button type="button" class="btn btn-secondary" (click)="form.resetForm()">Limpar</button>
+      </div>
+    </form>
+  </div>
+</div>

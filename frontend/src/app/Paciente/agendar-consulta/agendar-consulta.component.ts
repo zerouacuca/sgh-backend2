@@ -1,258 +1,206 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Observable, catchError, forkJoin, of, map, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
-// Interfaces com propriedades opcionais
-interface Medico {
+interface Consulta {
   id: number;
-  nome: string;
-  especialidade: string;
+  dataHora: string;
+  valorEmPontos: number;
+  vagasDisponiveis: number;
+  totalVagas: number;
+  status: string;
+  profissional: {
+    id: number;
+    nome: string;
+    crm: string;
+    telefone: string;
+    status: string;
+  };
+  especialidade: {
+    id: number;
+    nome: string;
+  };
 }
 
-interface DiaDisponivel {
-  data: Date;
-  disponivel: boolean;
-}
-
-interface ApiResponse<T> {
-  data?: T;
-  success: boolean;
+interface AgendamentoResponse {
+  id: number;
   message?: string;
 }
 
 @Component({
   selector: 'app-agendar-consulta',
-  templateUrl: './agendar-consulta.component.html',
-  styleUrls: ['./agendar-consulta.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule]
+  imports: [CommonModule, HttpClientModule],
+  templateUrl: './agendar-consulta.component.html',
+  styleUrls: ['./agendar-consulta.component.css']
 })
 export class AgendarConsultaComponent implements OnInit {
-  @Output() agendamentoConfirmado = new EventEmitter<any>();
+  consultas: Consulta[] = [];
+  consultasFiltradas: Consulta[] = [];
+  especialidadesUnicas: string[] = [];
+  isLoading = true;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+  pacienteId: number | null = null;
 
-  passoAtual = 1;
-  especialidades: string[] = [];
-  medicos: Medico[] = [];
-  medicosFiltrados: Medico[] = [];
-  especialidadeSelecionada: string = '';
-  medicoSelecionado: number | null = null;
-  medicoSelecionadoObj?: Medico;
-  mesAtual: Date = new Date();
-  diasDoMes: DiaDisponivel[] = [];
-  dataSelecionada?: Date;
-  horariosDisponiveis: string[] = [];
-  horarioSelecionado?: string;
-  isLoading = false;
-  errorMessage?: string;
+  filtroMedico: string = '';
+  filtroEspecialidade: string = '';
+  ordem: string = 'data';
 
-  valorConsulta = 150.00;
-  saldoPontos = 0;
-  pontosUsados = 0;
-  desconto = 0;
-  valorTotal = this.valorConsulta;
-
-  constructor(
-    private router: Router,
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
-    this.carregarDadosIniciais();
-    this.gerarCalendario();
-  }
-
-  fecharModal(): void {
-    this.router.navigate(['/']);
-  }
-
-  avancarParaPasso(passo: number): void {
-    if (passo === 2 && this.medicoSelecionado) {
-      this.medicoSelecionadoObj = this.getMedicoSelecionadoObj();
-      this.gerarCalendario();
-    }
-
-    if (passo === 3) {
-      this.calcularDesconto();
-    }
-
-    this.passoAtual = passo;
-  }
-
-  voltarParaPasso(passo: number): void {
-    this.passoAtual = passo;
-  }
-
-  private carregarDadosIniciais(): void {
-    this.isLoading = true;
-    this.errorMessage = undefined;
-
-    forkJoin({
-      especialidades: this.carregarEspecialidades(),
-      medicos: this.carregarMedicos(),
-      saldoPontos: this.carregarSaldoPontos()
-    }).pipe(
-      catchError((err) => {
-        console.error('Erro ao carregar dados', err);
-        this.errorMessage = 'Erro ao carregar dados. Tente novamente mais tarde.';
-        this.isLoading = false;
-        return of({
-          especialidades: [],
-          medicos: [],
-          saldoPontos: 0
-        });
-      })
-    ).subscribe(({ especialidades, medicos, saldoPontos }) => {
-      this.especialidades = especialidades;
-      this.medicos = medicos;
-      this.saldoPontos = saldoPontos;
+    const pacienteIdStr = localStorage.getItem('paciente_id');
+    if (pacienteIdStr && !isNaN(Number(pacienteIdStr))) {
+      this.pacienteId = parseInt(pacienteIdStr, 10);
+      this.carregarConsultas();
+    } else {
+      this.errorMessage = 'ID do paciente não encontrado. Faça login novamente.';
       this.isLoading = false;
-    });
-  }
-
-  private carregarEspecialidades(): Observable<string[]> {
-    return this.http.get<ApiResponse<string[]>>('https://api-gateway/especialidades').pipe(
-      tap(response => {
-        if (!response.success) throw new Error(response.message);
-      }),
-      map(response => response.data || [])
-    );
-  }
-
-  private carregarMedicos(): Observable<Medico[]> {
-    return this.http.get<ApiResponse<Medico[]>>('https://api-gateway/medicos').pipe(
-      tap(response => {
-        if (!response.success) throw new Error(response.message);
-      }),
-      map(response => response.data || [])
-    );
-  }
-
-  private carregarSaldoPontos(): Observable<number> {
-    return this.http.get<ApiResponse<number>>('https://api-gateway/usuarios/saldo-pontos').pipe(
-      tap(response => {
-        if (!response.success) throw new Error(response.message);
-      }),
-      map(response => response.data || 0)
-    );
-  }
-
-  getMedicoSelecionadoObj(): Medico | undefined {
-    return this.medicos.find(m => m.id === this.medicoSelecionado);
-  }
-
-  aoSelecionarEspecialidade(): void {
-    this.medicosFiltrados = this.medicos.filter(m =>
-      m.especialidade === this.especialidadeSelecionada
-    );
-    this.medicoSelecionado = null;
-  }
-
-  selecionarData(data: Date): void {
-    this.dataSelecionada = data;
-    this.carregarHorariosDisponiveis();
-    this.horarioSelecionado = undefined;
-  }
-
-  private carregarHorariosDisponiveis(): void {
-    if (!this.medicoSelecionado || !this.dataSelecionada) return;
-
-    this.isLoading = true;
-    const medicoId = this.medicoSelecionado;
-    const data = this.dataSelecionada.toISOString().split('T')[0];
-
-    this.http.get<ApiResponse<string[]>>(
-      `https://api-gateway/agendamentos/horarios-disponiveis?medicoId=${medicoId}&data=${data}`
-    ).pipe(
-      catchError((err) => {
-        console.error('Erro ao carregar horários', err);
-        this.errorMessage = 'Erro ao carregar horários disponíveis';
-        return of({ success: false, data: [] } as ApiResponse<string[]>);
-      })
-    ).subscribe(response => {
-      this.horariosDisponiveis = response.success ? (response.data || []) : [];
-      this.isLoading = false;
-    });
-  }
-
-  selecionarHorario(horario: string): void {
-    this.horarioSelecionado = horario;
-  }
-
-  calcularDesconto(): void {
-    this.desconto = Math.min(this.pontosUsados * 5, this.valorConsulta);
-    this.valorTotal = this.valorConsulta - this.desconto;
-  }
-
-  gerarCalendario(): void {
-    const inicio = new Date(this.mesAtual.getFullYear(), this.mesAtual.getMonth(), 1);
-    const fim = new Date(this.mesAtual.getFullYear(), this.mesAtual.getMonth() + 1, 0);
-    this.diasDoMes = [];
-
-    for (let dia = 1; dia <= fim.getDate(); dia++) {
-      const data = new Date(this.mesAtual.getFullYear(), this.mesAtual.getMonth(), dia);
-      const disponivel = data.getDay() !== 0;
-      this.diasDoMes.push({ data, disponivel });
     }
   }
 
-  mesAnterior(): void {
-    this.mesAtual = new Date(this.mesAtual.getFullYear(), this.mesAtual.getMonth() - 1, 1);
-    this.gerarCalendario();
+  carregarConsultas(): void {
+    this.http.get<Consulta[]>('http://localhost:8083/consultas')
+      .subscribe({
+        next: (data) => {
+          // Filtrar consultas: status DISPONÍVEL, vagasDisponiveis > 0, e profissional ativo
+          this.consultas = data.filter(consulta =>
+            consulta.status === 'DISPONÍVEL' &&
+            consulta.vagasDisponiveis > 0 &&
+            consulta.profissional.status === 'ATIVO'
+          );
+
+          // Extrair especialidades únicas para o filtro
+          this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
+
+          this.aplicarFiltros();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Erro ao carregar consultas:', err);
+          this.errorMessage = 'Erro ao carregar consultas disponíveis. Tente novamente.';
+          this.isLoading = false;
+        }
+      });
   }
 
-  proximoMes(): void {
-    this.mesAtual = new Date(this.mesAtual.getFullYear(), this.mesAtual.getMonth() + 1, 1);
-    this.gerarCalendario();
+  // Converter pontos para reais (1 ponto = R$5)
+  converterPontosParaReais(pontos: number): string {
+    return (pontos * 5).toFixed(2);
   }
 
-  confirmarAgendamento(): void {
-    if (!this.validarAgendamento()) return;
+  // Filtrar consultas por nome do médico
+  filtrarConsultas(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.filtroMedico = input.value.toLowerCase();
+    this.aplicarFiltros();
+  }
 
-    const agendamento = {
-      medicoId: this.medicoSelecionado,
-      data: this.dataSelecionada?.toISOString(),
-      horario: this.horarioSelecionado,
-      pontosUsados: this.pontosUsados
-    };
+  // Filtrar por especialidade
+  filtrarPorEspecialidade(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.filtroEspecialidade = select.value;
+    this.aplicarFiltros();
+  }
 
-    this.isLoading = true;
+  // Ordenar consultas
+  ordenarConsultas(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.ordem = select.value;
+    this.aplicarFiltros();
+  }
 
-    this.http.post<ApiResponse<any>>(
-      'https://api-gateway/agendamentos',
-      agendamento
-    ).pipe(
-      catchError((err) => {
-        console.error('Erro ao agendar', err);
-        this.isLoading = false;
-        return of({
-          success: false,
-          message: 'Erro ao confirmar agendamento'
-        } as ApiResponse<any>);
-      })
-    ).subscribe(response => {
-      this.isLoading = false;
+  // Aplicar todos os filtros e ordenação
+  aplicarFiltros(): void {
+    // Aplicar filtros
+    let resultado = [...this.consultas];
 
-      // Verificação segura das propriedades
-      if (response.success && response.data) {
-        this.agendamentoConfirmado.emit({
-          ...agendamento,
-          codigo: response.data.codigoAgendamento
-        });
-        this.router.navigate(['/']);
-      } else {
-        this.errorMessage = response.message || 'Erro desconhecido';
+    // Filtrar por médico
+    if (this.filtroMedico) {
+      resultado = resultado.filter(consulta =>
+        consulta.profissional.nome.toLowerCase().includes(this.filtroMedico)
+      );
+    }
+
+    // Filtrar por especialidade
+    if (this.filtroEspecialidade) {
+      resultado = resultado.filter(consulta =>
+        consulta.especialidade.nome === this.filtroEspecialidade
+      );
+    }
+
+    // Ordenar
+    resultado.sort((a, b) => {
+      switch(this.ordem) {
+        case 'data':
+          return new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime();
+        case 'valor':
+          return a.valorEmPontos - b.valorEmPontos;
+        case 'valor-desc':
+          return b.valorEmPontos - a.valorEmPontos;
+        default:
+          return 0;
       }
     });
+
+    this.consultasFiltradas = resultado;
   }
 
-  private validarAgendamento(): boolean {
-    return !!(
-      this.medicoSelecionado &&
-      this.dataSelecionada &&
-      this.horarioSelecionado
-    );
+  agendarConsulta(consultaId: number): void {
+    if (!this.pacienteId) {
+      this.errorMessage = 'ID do paciente não disponível.';
+      return;
+    }
+
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    const agendamento = {
+      pacienteId: this.pacienteId,
+      consultaId: consultaId
+    };
+
+    this.http.post('http://localhost:8081/agendamentos', agendamento, {
+      responseType: 'text'
+    }).subscribe({
+      next: (responseText) => {
+        try {
+
+          const response: AgendamentoResponse = JSON.parse(responseText);
+          this.successMessage = response.message || 'Agendamento realizado com sucesso!';
+        } catch (e) {
+
+          this.successMessage = responseText;
+        }
+
+
+        setTimeout(() => {
+          this.carregarConsultas();
+
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Erro ao agendar:', err);
+
+        if (err.status === 400) {
+          this.errorMessage = 'Dados inválidos. Verifique os campos.';
+        } else if (err.status === 404) {
+          this.errorMessage = 'Consulta não encontrada.';
+        } else if (err.status === 409) {
+          this.errorMessage = 'Você já possui um agendamento para esta consulta.';
+        } else if (err.status === 422) {
+          this.errorMessage = 'Não há vagas disponíveis para esta consulta.';
+        } else if (err.error?.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Erro ao realizar agendamento. Tente novamente.';
+        }
+
+        // Recarregar consultas para atualizar disponibilidade
+        this.carregarConsultas();
+      }
+    });
   }
 }

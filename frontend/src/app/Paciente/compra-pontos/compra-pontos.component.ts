@@ -87,7 +87,7 @@ export class CompraPontosComponent implements OnInit {
 
       const payload = {
         origem: "consulta",
-        tipo: "debito",
+        tipo: "CREDITO",
         valor: pontos * 5
       };
 

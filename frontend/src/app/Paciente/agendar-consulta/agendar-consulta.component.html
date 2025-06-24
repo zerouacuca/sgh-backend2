@@ -1,212 +1,74 @@
-<!-- agendar-consulta.component.html -->
-<div class="modal-header bg-primary text-white">
-  <h5 class="modal-title">
-    <i class="fas fa-calendar-plus me-2"></i>Agendar Nova Consulta
-  </h5>
-  <button type="button" class="btn-close btn-close-white" (click)="fecharModal()" aria-label="Close"></button>
-</div>
-
-<div class="modal-body">
-  <div class="container-fluid">
-    <!-- Passo 1: Busca de especialidade/médico -->
-    <div class="step" [class.active]="passoAtual === 1">
-      <div class="step-header mb-4">
-        <span class="step-number">1</span>
-        <h4>Buscar Especialidade e Médico</h4>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="especialidade" class="form-label">Especialidade</label>
-            <select id="especialidade"class="form-select"  [(ngModel)]="especialidadeSelecionada" (change)="aoSelecionarEspecialidade()">
-              <option value="" disabled selected>Selecione uma especialidade</option>
-              <option *ngFor="let esp of especialidades" [value]="esp">{{ esp }}</option>
-            </select>
-        </div>
-
-        <div class="col-md-6">
-          <label for="medico" class="form-label">Médico</label>
-          <select class="form-select" id="medico" [(ngModel)]="medicoSelecionado" [disabled]="!especialidadeSelecionada">
-            <option value="">Selecione um médico</option>
-            <option *ngFor="let med of medicosFiltrados" [value]="med.id">
-              {{med.nome}} - {{med.especialidade}}
-            </option>
-          </select>
-        </div>
-
-        <div class="col-12 mt-3">
-          <div class="d-flex justify-content-end">
-            <button class="btn btn-primary" (click)="avancarParaPasso(2)" [disabled]="!medicoSelecionado">
-              Próximo <i class="fas fa-arrow-right ms-2"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Passo 2: Seleção de data/horário -->
-    <div class="step" [class.active]="passoAtual === 2">
-      <div class="step-header mb-4">
-        <span class="step-number">2</span>
-        <h4>Selecionar Data e Horário</h4>
-      </div>
-
-      <div class="row">
-        <div class="col-md-5">
-          <div class="calendar-container">
-            <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
-              <button class="btn btn-sm btn-outline-secondary" (click)="mesAnterior()">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <h5 class="mb-0">{{mesAtual | date:'MMMM yyyy'}}</h5>
-              <button class="btn btn-sm btn-outline-secondary" (click)="proximoMes()">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-
-            <div class="calendar">
-              <div class="calendar-weekdays">
-                <div *ngFor="let dia of ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']" class="weekday">
-                  {{dia}}
-                </div>
-              </div>
-
-              <div class="calendar-days">
-                <div *ngFor="let dia of diasDoMes"
-                     class="day"
-                     [class.disabled]="!dia.disponivel"
-                     [class.selected]="dia.data === dataSelecionada"
-                     (click)="dia.disponivel ? selecionarData(dia.data) : null">
-                  {{dia.data | date:'d'}}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-7">
-          <h5 class="mb-3">Horários disponíveis</h5>
-          <div *ngIf="horariosDisponiveis.length === 0" class="alert alert-info">
-            Selecione uma data para ver os horários disponíveis
-          </div>
-
-          <div class="horarios-container">
-            <div *ngFor="let horario of horariosDisponiveis"
-                 class="horario-card"
-                 [class.selected]="horario === horarioSelecionado"
-                 (click)="selecionarHorario(horario)">
-              {{horario}}
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between mt-4">
-            <button class="btn btn-outline-secondary" (click)="voltarParaPasso(1)">
-              <i class="fas fa-arrow-left me-2"></i>Voltar
-            </button>
-            <button class="btn btn-primary" (click)="avancarParaPasso(3)" [disabled]="!horarioSelecionado">
-              Próximo <i class="fas fa-arrow-right ms-2"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Passo 3: Uso de pontos e confirmação -->
-    <div class="step" [class.active]="passoAtual === 3">
-      <div class="step-header mb-4">
-        <span class="step-number">3</span>
-        <h4>Usar Pontos e Confirmar</h4>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="resumo-consulta card mb-4">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Resumo da Consulta</h5>
-            </div>
-            <div class="card-body">
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                  <span>Médico:</span>
-                  <span>{{medicoSelecionadoObj?.nome}}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                  <span>Especialidade:</span>
-                  <span>{{medicoSelecionadoObj?.especialidade}}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                  <span>Data:</span>
-                  <span>{{dataSelecionada | date:'dd/MM/yyyy'}} às {{horarioSelecionado}}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                  <span>Valor:</span>
-                  <span>R$ {{valorConsulta | number:'1.2-2'}}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card mb-4">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Usar Pontos</h5>
-              <span class="badge bg-primary">
-                Saldo: {{saldoPontos}} pontos
-              </span>
-            </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label">Quantidade de pontos a usar:</label>
-                <input type="range" class="form-range" min="0" [max]="saldoPontos" step="1"
-                       [(ngModel)]="pontosUsados" (input)="calcularDesconto()">
-                <div class="d-flex justify-content-between">
-                  <span>0</span>
-                  <span>{{pontosUsados}} pontos</span>
-                  <span>{{saldoPontos}}</span>
-                </div>
-              </div>
-
-              <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                1 ponto = R$ 5,00 de desconto
-              </div>
-
-              <div class="resumo-pagamento">
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Valor total:</span>
-                  <span>R$ {{valorConsulta | number:'1.2-2'}}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2 text-success">
-                  <span>Desconto com pontos:</span>
-                  <span>- R$ {{desconto | number:'1.2-2'}}</span>
-                </div>
-                <div class="d-flex justify-content-between fw-bold">
-                  <span>Total a pagar:</span>
-                  <span>R$ {{valorTotal | number:'1.2-2'}}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-secondary" (click)="voltarParaPasso(2)">
-              <i class="fas fa-arrow-left me-2"></i>Voltar
-            </button>
-            <button class="btn btn-success" (click)="confirmarAgendamento()">
-              Confirmar Agendamento <i class="fas fa-check ms-2"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="container mt-4">
+  <!-- Adicionado container para mensagem de sucesso -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
   </div>
-</div>
 
-<div class="modal-footer" *ngIf="passoAtual === 3">
-  <div class="w-100 text-center">
-    <p class="text-muted mb-0">
-      <small>Após confirmação, será gerado um código único para este agendamento</small>
-    </p>
+  <h2 class="text-center mb-4">Consultas Disponíveis</h2>
+
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p>Carregando consultas disponíveis...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+    <button *ngIf="!isLoading" class="btn btn-sm btn-outline-secondary ms-2" (click)="carregarConsultas()">
+      Tentar novamente
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Filtros -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Buscar médico..."
+               (input)="filtrarConsultas($event)">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" (change)="filtrarPorEspecialidade($event)">
+          <option value="">Todas especialidades</option>
+          <option *ngFor="let esp of especialidadesUnicas" [value]="esp">{{ esp }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" (change)="ordenarConsultas($event)">
+          <option value="data">Data (mais recente)</option>
+          <option value="valor">Menor valor</option>
+          <option value="valor-desc">Maior valor</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Lista de consultas -->
+    <div class="row">
+      <div *ngFor="let consulta of consultasFiltradas" class="col-md-6 mb-4">
+        <div class="card h-100">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">{{ consulta.especialidade.nome }}</h5>
+          </div>
+          <div class="card-body">
+            <p class="card-text">
+              <strong>Médico:</strong> {{ consulta.profissional.nome }}<br>
+              <strong>Data:</strong> {{ consulta.dataHora | date:'dd/MM/yyyy HH:mm' }}<br>
+              <strong>Valor:</strong> R$ {{ converterPontosParaReais(consulta.valorEmPontos) }}<br>
+              <strong>Vagas disponíveis:</strong> {{ consulta.vagasDisponiveis }} de {{ consulta.totalVagas }}
+            </p>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary w-100" (click)="agendarConsulta(consulta.id)">
+              Agendar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="consultasFiltradas.length === 0" class="alert alert-info">
+      Nenhuma consulta disponível com os filtros selecionados.
+    </div>
   </div>
 </div>

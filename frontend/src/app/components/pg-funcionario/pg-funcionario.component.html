@@ -1,0 +1,46 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="container">
+  <h3 class="title-table">Consultas nas Próximas 48h</h3>
+
+  <table class="table table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>CODconsulta</th>
+        <th>Data/Hora</th>
+        <th>Paciente</th>
+        <th>Doutor</th>
+        <th>Especialidade</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let consulta of consultas">
+        <td>CON{{ consulta.id }}</td>
+        <td>{{ consulta.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ consulta.paciente }}</td>
+        <td>{{ consulta.doutor }}</td>
+        <td>{{ consulta.especialidade }}</td>
+        <td>
+          <ng-container *ngIf="consulta.status === 'PENDENTE'; else statusGrande">
+            <button class="btn btn-sm confirmar ms-2" (click)="confirmar(consulta.id)">Confirmar</button>
+            <button class="btn btn-sm cancelar ms-2" (click)="cancelar(consulta.id)">Cancelar</button>
+            <button class="btn btn-sm realizada ms-2" (click)="realizada(consulta.id)">Realizar</button>
+          </ng-container>
+
+          <ng-template #statusGrande>
+            <button 
+              class="btn btn-lg status"
+              [ngClass]="{
+                'compareceu': consulta.status === 'COMPARECEU',
+                'cancelada': consulta.status === 'CANCELADA',
+                'realizada': consulta.status === 'REALIZADA'
+              }"
+              disabled>
+              {{ consulta.status }}
+            </button>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
