@@ -2,8 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL;           // URL do ms-paciente
-const APPOINTMENT_SERVICE_URL = process.env.APPOINTMENT_SERVICE_URL; // URL do ms-consulta
+const { USER_SERVICE_URL, APPOINTMENT_SERVICE_URL, AUTH_SERVICE_URL } = require('../config');
 
 // ==========================
 // === ms-paciente endpoints ===
@@ -46,3 +45,4 @@ router.post('/pacientes/:id/transacoes', async (req, res) => {
 // =============================
 // === ms-consulta endpoints ===
 // =============================
+module.exports = router;

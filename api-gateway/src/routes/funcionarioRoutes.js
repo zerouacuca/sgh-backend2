@@ -2,8 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL;           // URL do ms-paciente
-const APPOINTMENT_SERVICE_URL = process.env.APPOINTMENT_SERVICE_URL; // URL do ms-consulta
+const { USER_SERVICE_URL, APPOINTMENT_SERVICE_URL, AUTH_SERVICE_URL } = require('../config');
 
 
 // DELETE /pacientes/:id : Deletar paciente
@@ -119,3 +118,5 @@ router.delete('/profissionais/:id', async (req, res) => {
     res.status(error.response?.status || 500).send("Erro ao deletar profissional.");
   }
 });
+
+module.exports = router;

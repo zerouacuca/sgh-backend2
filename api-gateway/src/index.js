@@ -1,13 +1,19 @@
 const express = require('express');
 const app = express();
 
+
+
 const publicRoutes = require('./routes/publicRoutes');
 const funcionarioRoutes = require('./routes/funcionarioRoutes');
 const pacienteRoutes = require('./routes/pacienteRoutes');
 
+
+
+
 // Ajustado: importa o middleware auth.js
 const authMiddleware = require('./middleware/auth'); // Middleware para validar JWT e setar req.user
-const perfilMiddleware = require('./middleware/perfilMiddleware'); // Middleware para verificar perfil
+const perfilMiddleware = require('./middleware/authorization'); // Middleware para verificar perfil
+
 
 app.use(express.json());
 
