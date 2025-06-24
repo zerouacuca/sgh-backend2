@@ -30,6 +30,12 @@ public class ConsultaCanceladaListener {
         try {
             JsonNode json = objectMapper.readTree(message);
 
+            // Ignora mensagens com origem explícita vinda do ms-consulta
+            if (json.has("origem") && "ms-consulta".equals(json.get("origem").asText())) {
+                log.warn("🔁 Reembolso ignorado (já processado ou origem de reembolso em massa): {}", message);
+                return;
+            }
+
             Long pacienteId = json.get("pacienteId").asLong();
             Integer valor = json.get("valor").asInt();
             Long consultaId = json.get("consultaId").asLong();
