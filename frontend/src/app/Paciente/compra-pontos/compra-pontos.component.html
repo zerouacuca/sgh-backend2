@@ -1,0 +1,117 @@
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Overlay de Carregamento -->
+            <div *ngIf="carregando" class="position-absolute top-50 start-50 translate-middle">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+            </div>
+
+            <!-- Card de Saldo de Pontos -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Saldo de Pontos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ formatarSaldo(saldoPontos)}} R$</h2>
+                            <p class="text-muted mb-0">Saldo atual</p>
+                        </div>
+                        <i class="fas fa-coins fa-3x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Compra de Pontos -->
+            <div class="card points-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-coins me-2"></i>Comprar Pontos</h3>
+                </div>
+
+                <div class="card-body">
+                    <!-- Formulário de Compra -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Quantidade de Pontos</label>
+                        <div class="input-group">
+                            <input type="number"
+                                   #quantidadePontos
+                                   class="form-control"
+                                   [class.is-invalid]="carregando"
+                                   min="1"
+                                   step="1"
+                                   required
+                                   placeholder="Digite a quantidade"
+                                   (input)="atualizarTotal(quantidadePontos.value)"
+                                   [disabled]="carregando">
+                            <span class="input-group-text">pontos</span>
+                        </div>
+                        <small class="form-text text-muted">1 ponto = R$ 5,00</small>
+                    </div>
+
+                    <!-- Resumo da Compra -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading"><i class="fas fa-file-invoice-dollar me-2"></i>Resumo da Compra</h5>
+                        <hr>
+                        <div class="fw-bold fs-4 text-dark">
+                            Total: {{ formatarMoeda(total) }}
+                        </div>
+                    </div>
+
+                    <!-- Botão de Confirmação -->
+                    <button class="btn btn-primary w-100 py-2"
+                            (click)="processarCompra()"
+                            [disabled]="carregando">
+                        <span *ngIf="!carregando">
+                            <i class="fas fa-cart-plus me-2"></i>Confirmar Compra
+                        </span>
+                        <span *ngIf="carregando">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Processando...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Histórico de Transações -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Histórico de Transações</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group transaction-history">
+                        <!-- Item de Transação -->
+                        <div *ngFor="let transacao of transacoes"
+                             class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">
+                                    {{ transacao.origem | titlecase }} - {{ transacao.tipo | titlecase }}
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ formatarData(transacao.dataHora) }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold"
+                                     [ngClass]="{'text-success': transacao.tipo === 'CREDITO', 'text-danger': transacao.tipo === 'DEBITO'}">
+                                    {{ transacao.tipo === 'CREDITO' ? '+' : '-' }} {{ formatarMoeda(transacao.valor) }}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ transacao.valor / 5 }} pts
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mensagem quando não há transações -->
+                        <div *ngIf="transacoes.length === 0"
+                             class="list-group-item text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p class="mb-0">Nenhuma transação registrada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

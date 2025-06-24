@@ -1,0 +1,26 @@
+/* paciente-dashboard.component.css */
+.sidebar {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.nav-link {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.nav-link.active {
+  background-color: #0d6efd;
+  color: white !important;
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.25);
+}
+
+main {
+  background-color: #ffffff;
+  border-radius: 12px 0 0 12px;
+}

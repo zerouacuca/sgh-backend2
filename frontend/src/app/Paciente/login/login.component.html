@@ -1,0 +1,68 @@
+<div class="container vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px; border-radius: 1rem;">
+    <h3 class="text-center mb-4">Login</h3>
+
+    <!-- Alert de Erro -->
+    <ngb-alert *ngIf="mensagemErro" type="danger" [dismissible]="false" class="mb-3">
+      {{ mensagemErro }}
+    </ngb-alert>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" novalidate>
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label">E-mail</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          [(ngModel)]="credentials.email"
+          required
+          pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}"
+          #email="ngModel"
+          [class.is-invalid]="email.invalid && (email.dirty || email.touched)"
+        >
+        <div *ngIf="email.invalid && (email.dirty || email.touched)" class="invalid-feedback">
+          <div *ngIf="email.errors?.['required']">Campo obrigatório</div>
+          <div *ngIf="email.errors?.['pattern']">Formato de e-mail inválido</div>
+        </div>
+      </div>
+
+      <!-- Senha -->
+<div class="mb-4">
+  <label for="senha" class="form-label">Senha</label>
+  <input
+    type="password"
+    class="form-control"
+    id="senha"
+    name="senha"
+    [(ngModel)]="credentials.senha"
+    required
+    #senha="ngModel"
+    [class.is-invalid]="senha.invalid && (senha.dirty || senha.touched)"
+  >
+  <div *ngIf="senha.invalid && (senha.dirty || senha.touched)" class="invalid-feedback">
+    <div *ngIf="senha.errors?.['required']">Campo obrigatório</div>
+  </div>
+</div>
+
+      <!-- Botões -->
+      <div class="d-flex justify-content-between gap-2">
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          [disabled]="!loginForm.valid"
+        >
+          Entrar
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100"
+          (click)="onCadastrar()"
+        >
+          Cadastre-se
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

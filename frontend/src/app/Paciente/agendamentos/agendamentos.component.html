@@ -1,0 +1,50 @@
+<div class="container mt-4">
+  <h2 class="text-primary">Meus Agendamentos</h2>
+
+  <!-- Filtros -->
+  <div class="btn-group my-3">
+    <button class="btn btn-outline-primary" [class.active]="filtroStatus === 'TODOS'" (click)="filtroStatus = 'TODOS'">Todos</button>
+    <button class="btn btn-outline-primary" [class.active]="filtroStatus === 'FUTUROS'" (click)="filtroStatus = 'FUTUROS'">Futuros</button>
+    <button class="btn btn-outline-success" [class.active]="filtroStatus === 'REALIZADOS'" (click)="filtroStatus = 'REALIZADOS'">Realizados</button>
+    <button class="btn btn-outline-danger" [class.active]="filtroStatus === 'CANCELADOS'" (click)="filtroStatus = 'CANCELADOS'">Cancelados</button>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Código</th>
+          <th>Data</th>
+          <th>Médico</th>
+          <th>Especialidade</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ag of agendamentosFiltrados">
+          <td>{{ ag.codigo }}</td>
+          <td>{{ ag.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ ag.medico }}</td>
+          <td>{{ ag.especialidade }}</td>
+          <td>
+            <span class="badge"
+              [ngClass]="{
+                'bg-primary': ag.status === 'CRIADO',
+                'bg-info text-dark': ag.status === 'CHECK-IN',
+                'bg-success': ag.status === 'REALIZADO',
+                'bg-danger': ag.status === 'CANCELADO'
+              }">
+              {{ ag.status }}
+            </span>
+          </td>
+          <td>
+            <button *ngIf="podeCancelar(ag)" class="btn btn-sm btn-danger me-1" (click)="cancelar(ag)">Cancelar</button>
+            <button *ngIf="podeFazerCheckIn(ag)" class="btn btn-sm btn-warning" (click)="checkIn(ag)">Check-in</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

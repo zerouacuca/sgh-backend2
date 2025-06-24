@@ -1,0 +1,75 @@
+<div class="container-fluid vh-100">
+  <div class="row h-100">
+    <!-- Menu lateral -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar py-4 border-end">
+      <div class="px-3 mb-4">
+        <!-- Card de Saldo de Pontos -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body text-center">
+            <h6 class="card-title text-muted mb-3">
+              <i class="bi bi-wallet2 me-1"></i> Saldo de Pontos
+            </h6>
+
+            <div *ngIf="carregandoSaldo" class="text-center py-2">
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+              </div>
+            </div>
+
+            <div *ngIf="!carregandoSaldo" class="display-5 fw-bold text-primary">
+              {{ formatarSaldo(saldoPontos) }}
+            </div>
+          </div>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item mb-2">
+            <a
+              routerLink="/dashboard"
+              routerLinkActive="active"
+              class="nav-link btn btn-outline-primary w-100 text-start d-flex align-items-center"
+            >
+              <i class="bi bi-calendar-check me-2"></i>
+              Meus Agendamentos
+            </a>
+          </li>
+          <li class="nav-item mb-2">
+            <a
+              routerLink="/dashboard/compra"
+              routerLinkActive="active"
+              class="nav-link btn btn-outline-primary w-100 text-start d-flex align-items-center"
+            >
+              <i class="bi bi-cash me-2"></i>
+              Compra de Pontos
+            </a>
+          </li>
+          <li class="nav-item mb-2">
+            <a
+              routerLink="/dashboard/agendamento"
+              routerLinkActive="active"
+              class="nav-link btn btn-outline-primary w-100 text-start d-flex align-items-center"
+            >
+              <i class="bi bi-calendar-plus me-2"></i>
+              Agendar Consulta
+            </a>
+          </li>
+          <li class="nav-item mb-2">
+            <a
+              routerLink="/login"
+              class="nav-link btn btn-outline-primary w-100 text-start d-flex align-items-center"
+              (click)="authService.logout()"
+            >
+              <i class="bi bi-box-arrow-right me-2"></i>
+              Sair
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <main class="col-md-9 col-lg-10 px-4 py-4 overflow-auto bg-light rounded-start">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
