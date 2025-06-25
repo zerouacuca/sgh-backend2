@@ -40,27 +40,34 @@ public class AgendamentoService {
         Paciente paciente = pacienteRepository.findById(request.getPacienteId())
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
-        // 🔎 Verifica se a consulta existe no ms-consulta
+        // Busca a consulta no ms-consulta
         String consultaUrl = "http://ms-consulta:8083/consultas/" + request.getConsultaId();
         RestTemplate restTemplate = new RestTemplate();
 
+        Map<String, Object> consulta;
         try {
-            restTemplate.getForEntity(consultaUrl, Object.class);
+            consulta = restTemplate.getForObject(consultaUrl, Map.class);
         } catch (Exception e) {
             throw new RuntimeException("Consulta não encontrada");
         }
 
-        // Verifique se paciente tem pontos suficientes
-        int valorConsulta = 30; // Ideal: pegar isso da consulta (se retornado no endpoint)
+        if (consulta == null || !consulta.containsKey("valorEmPontos")) {
+            throw new RuntimeException("Valor da consulta não encontrado");
+        }
+
+        // Obtém o valor da consulta dinamicamente
+        int valorConsulta = (int) consulta.get("valorEmPontos");
+
+        // Verifica saldo
         if (paciente.getSaldoPontos() < valorConsulta) {
             return "Pontos insuficientes para agendar a consulta.";
         }
 
-        // Debita os pontos
+        // Debita pontos
         paciente.setSaldoPontos(paciente.getSaldoPontos() - valorConsulta);
         pacienteRepository.save(paciente);
 
-        // Registra a transação
+        // Registra transação
         TransacaoPonto transacao = TransacaoPonto.builder()
                 .paciente(paciente)
                 .dataHora(LocalDateTime.now())
@@ -70,7 +77,7 @@ public class AgendamentoService {
                 .build();
         transacaoPontoRepository.save(transacao);
 
-        // Envia evento para o ms-consulta
+        // Envia evento de agendamento
         Map<String, Object> evento = new HashMap<>();
         evento.put("pacienteId", paciente.getId());
         evento.put("consultaId", request.getConsultaId());
@@ -80,5 +87,4 @@ public class AgendamentoService {
 
         return "Agendamento solicitado com sucesso, aguardando confirmação.";
     }
-
 }
