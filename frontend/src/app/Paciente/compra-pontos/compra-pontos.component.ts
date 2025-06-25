@@ -17,7 +17,7 @@ interface Transacao {
   id: number;
   origem: string;
   tipo: string;
-  valor: number;
+  valor: number; // Agora representa pontos diretamente
   dataHora: string;
 }
 
@@ -86,14 +86,14 @@ export class CompraPontosComponent implements OnInit {
       const pacienteId = this.obterPacienteId();
 
       const payload = {
-        origem: "consulta",
+        origem: "COMPRA",
         tipo: "CREDITO",
-        valor: pontos * 5
+        valor: pontos
       };
 
       await this.enviarParaApi(pacienteId, payload);
+      this.saldoPontos += pontos;
 
-      // Recarrega o histórico após a compra
       await this.carregarHistorico();
 
       this.limparFormulario();
@@ -158,6 +158,7 @@ export class CompraPontosComponent implements OnInit {
 
   atualizarTotal(valor: string): void {
     const pontos = Number(valor) || 0;
+
     this.total = pontos * 5;
   }
 
@@ -177,8 +178,7 @@ export class CompraPontosComponent implements OnInit {
     return new Date(dataHora).toLocaleString('pt-BR');
   }
 
-  formatarSaldo(saldo: number): string {
-  return Math.abs(saldo).toString();
+  pontosParaReais(pontos: number): string {
+    return this.formatarMoeda(pontos * 5);
   }
-
 }

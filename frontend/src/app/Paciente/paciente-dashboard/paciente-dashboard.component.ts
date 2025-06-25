@@ -4,6 +4,12 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../Services/auth-service.service';
 
+interface PacienteResponse {
+  id: number;
+  saldoPontos: number;
+  // Adicione outras propriedades conforme necessário
+}
+
 @Component({
   selector: 'app-paciente-dashboard',
   standalone: true,
@@ -38,10 +44,10 @@ export class DashboardComponent implements OnInit {
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
 
-      const response = await this.http.get<any>(url, { headers }).toPromise();
+      const response = await this.http.get<PacienteResponse>(url, { headers }).toPromise();
 
-      if (response && response.saldoPontos !== undefined) {
-        this.saldoPontos = Math.abs(response.saldoPontos);
+      if (response) {
+        this.saldoPontos = response.saldoPontos;
       }
 
     } catch (error) {

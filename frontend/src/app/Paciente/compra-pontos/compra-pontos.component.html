@@ -16,7 +16,8 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0">{{ formatarSaldo(saldoPontos)}} R$</h2>
+                            <h2 class="mb-0">{{ saldoPontos }} Pontos</h2>
+                            <p class="mb-0 text-muted">Equivalente a {{ pontosParaReais(saldoPontos) }}</p>
                             <p class="text-muted mb-0">Saldo atual</p>
                         </div>
                         <i class="fas fa-coins fa-3x text-warning"></i>
@@ -57,6 +58,7 @@
                         <div class="fw-bold fs-4 text-dark">
                             Total: {{ formatarMoeda(total) }}
                         </div>
+                        <div class="small">(Equivalente a {{ quantidadePontos.value || 0 }} pontos)</div>
                     </div>
 
                     <!-- Botão de Confirmação -->
@@ -95,10 +97,10 @@
                             <div class="text-end">
                                 <div class="fw-bold"
                                      [ngClass]="{'text-success': transacao.tipo === 'CREDITO', 'text-danger': transacao.tipo === 'DEBITO'}">
-                                    {{ transacao.tipo === 'CREDITO' ? '+' : '-' }} {{ formatarMoeda(transacao.valor) }}
+                                    {{ transacao.tipo === 'CREDITO' ? '+' : '-' }} {{ transacao.valor }} pts
                                 </div>
                                 <div class="small text-muted">
-                                    {{ transacao.valor / 5 }} pts
+                                    {{ pontosParaReais(transacao.valor) }}
                                 </div>
                             </div>
                         </div>

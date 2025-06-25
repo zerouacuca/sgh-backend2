@@ -1,8 +1,53 @@
 <div class="container mt-4">
-  <!-- Adicionado container para mensagem de sucesso -->
+  <!-- Mensagens -->
   <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ successMessage }}
+    <div style="white-space: pre-line;">{{ successMessage }}</div>
     <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+  </div>
+
+  <!-- Modal para uso de pontos -->
+  <div *ngIf="showPontosModal" class="modal-backdrop fade show" (click)="fecharModalPontos()"></div>
+  <div *ngIf="showPontosModal" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Usar pontos para pagamento</h5>
+          <button type="button" class="btn-close btn-close-white" (click)="fecharModalPontos()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="consultaDetalhes">
+            <p><strong>Consulta:</strong> {{consultaDetalhes.especialidade}} com Dr. {{consultaDetalhes.profissional}}</p>
+            <p><strong>Valor total:</strong> R$ {{converterPontosParaReais(consultaDetalhes.valorEmPontos)}}</p>
+            <p><strong>Saldo disponível:</strong> {{saldoPontos}} pontos</p>
+
+            <div class="mb-3">
+              <label class="form-label">Quantidade de pontos a usar:</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="pontosParaUsar"
+                     (input)="calcularValorDinheiro()"
+                     min="0" [max]="saldoPontos">
+            </div>
+
+            <div class="alert alert-info">
+              <p><strong>Resumo do pagamento:</strong></p>
+              <p>Pontos usados: {{pontosParaUsar}} (R$ {{(pontosParaUsar * 5).toFixed(2)}})</p>
+              <p>Valor em dinheiro: R$ {{valorDinheiro.toFixed(2)}}</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="fecharModalPontos()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="confirmarAgendamentoComPontos()">
+            Confirmar Agendamento
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <h2 class="text-center mb-4">Consultas Disponíveis</h2>
@@ -53,13 +98,13 @@
           <div class="card-body">
             <p class="card-text">
               <strong>Médico:</strong> {{ consulta.profissional.nome }}<br>
-              <strong>Data:</strong> {{ consulta.dataHora | date:'dd/MM/yyyy HH:mm' }}<br>
+              <strong>Data:</strong> {{ formatarData(consulta.dataHora) }}<br>
               <strong>Valor:</strong> R$ {{ converterPontosParaReais(consulta.valorEmPontos) }}<br>
               <strong>Vagas disponíveis:</strong> {{ consulta.vagasDisponiveis }} de {{ consulta.totalVagas }}
             </p>
           </div>
           <div class="card-footer">
-            <button class="btn btn-primary w-100" (click)="agendarConsulta(consulta.id)">
+            <button class="btn btn-primary w-100" (click)="abrirModalPontos(consulta)">
               Agendar
             </button>
           </div>
