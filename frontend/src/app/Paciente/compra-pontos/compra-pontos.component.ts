@@ -68,7 +68,7 @@ export class CompraPontosComponent implements OnInit {
       ).toPromise();
 
       if (paciente) {
-        this.transacoes = paciente.transacoes || [];
+        this.transacoes = paciente.transacoes ? paciente.transacoes.reverse() : [];
         this.saldoPontos = paciente.saldoPontos;
       }
 
