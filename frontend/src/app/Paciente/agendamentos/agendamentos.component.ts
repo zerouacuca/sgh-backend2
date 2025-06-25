@@ -121,7 +121,7 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
   }
 
   checkIn(agendamento: any): void {
-    this.http.put(`${this.baseUrl}/${agendamento.id}/checkin`, {})
+    this.http.post(`${this.baseUrl}/checkin/${agendamento.id}`, {})
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => this.carregarAgendamentos(),

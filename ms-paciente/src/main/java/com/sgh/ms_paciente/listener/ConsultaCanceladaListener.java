@@ -1,7 +1,6 @@
 package com.sgh.ms_paciente.listener;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sgh.ms_paciente.dto.EventoCancelamentoConsultaDTO;
 import com.sgh.ms_paciente.model.Paciente;
 import com.sgh.ms_paciente.model.TipoTransacao;
 import com.sgh.ms_paciente.model.TransacaoPonto;
@@ -20,25 +19,21 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ConsultaCanceladaListener {
 
-    private final ObjectMapper objectMapper;
     private final PacienteRepository pacienteRepository;
     private final TransacaoPontoRepository transacaoPontoRepository;
 
     @RabbitListener(queues = "${rabbitmq.queue.cancelamento}")
     @Transactional
-    public void onConsultaCancelada(String message) {
+    public void onConsultaCancelada(EventoCancelamentoConsultaDTO dto) {
         try {
-            JsonNode json = objectMapper.readTree(message);
-
-            // Ignora mensagens com origem explícita vinda do ms-consulta
-            if (json.has("origem") && "ms-consulta".equals(json.get("origem").asText())) {
-                log.warn("🔁 Reembolso ignorado (já processado ou origem de reembolso em massa): {}", message);
+            if ("ms-consulta".equals(dto.getOrigem())) {
+                log.warn("🔁 Reembolso ignorado (já processado ou origem de reembolso em massa): {}", dto);
                 return;
             }
 
-            Long pacienteId = json.get("pacienteId").asLong();
-            Integer valor = json.get("valor").asInt();
-            Long consultaId = json.get("consultaId").asLong();
+            Long pacienteId = dto.getPacienteId();
+            Integer valor = dto.getValor();
+            Long consultaId = dto.getConsultaId();
 
             Paciente paciente = pacienteRepository.findById(pacienteId)
                     .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));

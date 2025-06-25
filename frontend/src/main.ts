@@ -11,10 +11,26 @@ import { AgendarConsultaComponent } from './app/Paciente/agendar-consulta/agenda
 import { AgendamentosComponent } from './app/Paciente/agendamentos/agendamentos.component';
 import { DashboardComponent } from './app/Paciente/paciente-dashboard/paciente-dashboard.component';
 
+// Funcionario
+import { PgFuncionarioComponent } from './app/components/pg-funcionario/pg-funcionario.component';
+import { CadastrarFuncionarioComponent } from './app/components/cadastrar-funcionario/cadastrarfuncionario.component';
+import { ListaFuncionariosComponent } from './app/components/lista-funcionarios/listafuncionarios.component';
+import { AtualizarFuncionarioComponent } from './app/components/atualizar-funcionario/atualizarfuncionario.component';
+import { CadastrarConsultaComponent } from './app/components/cadastrar-consulta/cadastrarconsulta.component';
+
+
+
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'cadastro', component: CadastroComponent },
+
+  { path: 'funcionario', component: PgFuncionarioComponent },
+{ path: 'funcionario/cadastrar', component: CadastrarFuncionarioComponent },
+{ path: 'funcionario/lista', component: ListaFuncionariosComponent },
+{ path: 'funcionario/atualizar', component: AtualizarFuncionarioComponent },
+{ path: 'cadastrar-consulta', component: CadastrarConsultaComponent },
+
 
   {
     path: 'dashboard',
