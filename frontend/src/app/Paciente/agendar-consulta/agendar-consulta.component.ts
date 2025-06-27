@@ -4,6 +4,7 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../Services/auth-service.service';
+import { PacienteService } from '../../Services/paciente-service'; // Importa PacienteService
 import { Observable } from 'rxjs'; // Importar Observable
 
 interface Consulta {
@@ -54,6 +55,7 @@ export class AgendarConsultaComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private pacienteService = inject(PacienteService); // Injeta o PacienteService
 
   consultas: Consulta[] = [];
   consultasFiltradas: Consulta[] = [];
@@ -62,7 +64,7 @@ export class AgendarConsultaComponent implements OnInit {
   errorMessage: string | null = null;
   successMessage: string | null = null;
   pacienteId: number | null = null;
-  saldoPontos: number = 0;
+  saldoPontos: number = 0; // Este saldo será apenas local, o serviço gerencia o global.
 
   // Variáveis para o modal de pontos
   showPontosModal: boolean = false;
@@ -83,7 +85,7 @@ export class AgendarConsultaComponent implements OnInit {
       this.pacienteId = parseInt(pacienteIdStr, 10);
       this.carregarConsultas();
       this.carregarSaldoPontos();
-      this.carregarEspecialidades(); // NOVO: Carrega as especialidades do backend
+      this.carregarEspecialidades(); // Carrega as especialidades do backend
     } else {
       this.errorMessage = 'ID do paciente não encontrado. Faça login novamente.';
       this.isLoading = false;
@@ -117,6 +119,8 @@ export class AgendarConsultaComponent implements OnInit {
         .subscribe({
           next: (paciente) => {
             this.saldoPontos = paciente.saldoPontos;
+            // Notifica o PacienteService sobre o saldo atualizado
+            this.pacienteService.atualizarSaldo(paciente.saldoPontos);
           },
           error: (err) => {
             console.error('Erro ao carregar saldo de pontos:', err);
@@ -135,7 +139,6 @@ export class AgendarConsultaComponent implements OnInit {
     }
   }
 
-  // NOVO MÉTODO: Carregar especialidades do backend
   private carregarEspecialidades(): void {
     try {
       const headers = this.getAuthHeaders();
@@ -143,7 +146,6 @@ export class AgendarConsultaComponent implements OnInit {
         .subscribe({
           next: (data) => {
             this.especialidadesUnicas = data.map(especialidade => especialidade.nome);
-            // Ordena as especialidades em ordem alfabética para a UI
             this.especialidadesUnicas.sort();
           },
           error: (err) => {
@@ -178,8 +180,6 @@ export class AgendarConsultaComponent implements OnInit {
               consulta.profissional.status === 'ATIVO'
             );
 
-            // Removido: especialidadesUnicas agora é carregado de forma independente
-            // this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
             this.aplicarFiltros();
             this.isLoading = false;
           },
@@ -325,7 +325,7 @@ export class AgendarConsultaComponent implements OnInit {
 
     try {
       const headers = this.getAuthHeaders();
-      this.http.post('http://localhost:8080/agendamentos', agendamento, {
+      this.http.post('http://localhost:8080/pacientes/agendamentos', agendamento, {
         headers,
         responseType: 'text'
       }).subscribe({
@@ -339,7 +339,10 @@ export class AgendarConsultaComponent implements OnInit {
             this.successMessage = 'Agendamento realizado com sucesso!';
           }
 
+          // Saldo local do componente é atualizado
           this.saldoPontos -= pontosUsados;
+          // NOTIFICA O PACIENTESERVICE para que o Dashboard seja atualizado
+          this.pacienteService.atualizarSaldo(this.saldoPontos);
 
           this.consultaSelecionadaId = null;
 
