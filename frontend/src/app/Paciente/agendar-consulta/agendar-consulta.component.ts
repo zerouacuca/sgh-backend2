@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core'; // Adicionado 'inject'
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'; // Importa HttpHeaders
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../Services/auth-service.service'; // Importa o AuthService
+import { AuthService } from '../../Services/auth-service.service';
+import { Observable } from 'rxjs'; // Importar Observable
 
 interface Consulta {
   id: number;
@@ -35,6 +36,12 @@ interface Paciente {
   saldoPontos: number;
 }
 
+// Interface para a resposta do endpoint de especialidades
+interface EspecialidadeResponse {
+  id: number;
+  nome: string;
+}
+
 @Component({
   selector: 'app-agendar-consulta',
   standalone: true,
@@ -45,12 +52,12 @@ interface Paciente {
 export class AgendarConsultaComponent implements OnInit {
   // Injeções
   private http = inject(HttpClient);
-  private router = inject(Router); // Usando inject para Router também
-  private authService = inject(AuthService); // Injeta o AuthService
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
   consultas: Consulta[] = [];
   consultasFiltradas: Consulta[] = [];
-  especialidadesUnicas: string[] = [];
+  especialidadesUnicas: string[] = []; // Irá armazenar apenas os nomes das especialidades
   isLoading = true;
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -68,7 +75,6 @@ export class AgendarConsultaComponent implements OnInit {
   filtroEspecialidade: string = '';
   ordem: string = 'data';
 
-  // O construtor agora está vazio ou pode ser removido se não houver lógica adicional
   constructor() {}
 
   ngOnInit(): void {
@@ -77,27 +83,25 @@ export class AgendarConsultaComponent implements OnInit {
       this.pacienteId = parseInt(pacienteIdStr, 10);
       this.carregarConsultas();
       this.carregarSaldoPontos();
+      this.carregarEspecialidades(); // NOVO: Carrega as especialidades do backend
     } else {
       this.errorMessage = 'ID do paciente não encontrado. Faça login novamente.';
       this.isLoading = false;
       console.error('ID do paciente não encontrado no localStorage.');
-      // Opcional: redirecionar para a página de login se o ID do paciente for crítico
       this.authService.logout();
       this.router.navigate(['/login']);
     }
   }
 
-  // Novo método para obter os cabeçalhos com o token JWT
   private getAuthHeaders(): HttpHeaders {
-    const token = this.authService.getToken(); // Obtém o token do AuthService
+    const token = this.authService.getToken();
     if (token) {
       return new HttpHeaders({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // Adiciona o token JWT
+        'Authorization': `Bearer ${token}`
       });
     } else {
       this.errorMessage = 'Token de autenticação ausente. Faça login novamente.';
-      // Redireciona para login se o token não for encontrado
       this.authService.logout();
       this.router.navigate(['/login']);
       throw new Error('Token de autenticação não encontrado.');
@@ -108,7 +112,7 @@ export class AgendarConsultaComponent implements OnInit {
     if (!this.pacienteId) return;
 
     try {
-      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      const headers = this.getAuthHeaders();
       this.http.get<Paciente>(`http://localhost:8080/pacientes/pacientes/${this.pacienteId}`, { headers })
         .subscribe({
           next: (paciente) => {
@@ -131,12 +135,40 @@ export class AgendarConsultaComponent implements OnInit {
     }
   }
 
+  // NOVO MÉTODO: Carregar especialidades do backend
+  private carregarEspecialidades(): void {
+    try {
+      const headers = this.getAuthHeaders();
+      this.http.get<EspecialidadeResponse[]>('http://localhost:8080/pacientes/especialidades', { headers })
+        .subscribe({
+          next: (data) => {
+            this.especialidadesUnicas = data.map(especialidade => especialidade.nome);
+            // Ordena as especialidades em ordem alfabética para a UI
+            this.especialidadesUnicas.sort();
+          },
+          error: (err) => {
+            console.error('Erro ao carregar especialidades:', err);
+            if (err.status === 401 || err.status === 403) {
+              this.errorMessage = 'Sessão expirada ou não autorizada ao carregar especialidades. Faça login novamente.';
+              this.authService.logout();
+              this.router.navigate(['/login']);
+            } else {
+              this.errorMessage = 'Erro ao carregar lista de especialidades. Tente novamente.';
+            }
+          }
+        });
+    } catch (error: any) {
+        console.error('Erro ao preparar requisição de especialidades:', error.message);
+        this.errorMessage = error.message;
+    }
+  }
+
   carregarConsultas(): void {
     this.isLoading = true;
     this.errorMessage = null;
 
     try {
-      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      const headers = this.getAuthHeaders();
       this.http.get<Consulta[]>('http://localhost:8080/pacientes/consultas', { headers })
         .subscribe({
           next: (data) => {
@@ -146,7 +178,8 @@ export class AgendarConsultaComponent implements OnInit {
               consulta.profissional.status === 'ATIVO'
             );
 
-            this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
+            // Removido: especialidadesUnicas agora é carregado de forma independente
+            // this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
             this.aplicarFiltros();
             this.isLoading = false;
           },
@@ -168,8 +201,6 @@ export class AgendarConsultaComponent implements OnInit {
         this.isLoading = false;
     }
   }
-
-  // ... (métodos existentes: abrirModalPontos, fecharModalPontos, calcularValorDinheiro, confirmarAgendamentoComPontos, filtrarConsultas, filtrarPorEspecialidade, ordenarConsultas, aplicarFiltros)
 
   abrirModalPontos(consulta: Consulta): void {
     this.consultaSelecionadaId = consulta.id;
@@ -293,9 +324,9 @@ export class AgendarConsultaComponent implements OnInit {
     console.log('Enviando payload:', agendamento);
 
     try {
-      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      const headers = this.getAuthHeaders();
       this.http.post('http://localhost:8080/agendamentos', agendamento, {
-        headers, // Passa os cabeçalhos
+        headers,
         responseType: 'text'
       }).subscribe({
         next: (responseText) => {
@@ -337,7 +368,6 @@ export class AgendarConsultaComponent implements OnInit {
             this.errorMessage = 'Erro ao realizar agendamento. Tente novamente.';
           }
 
-          // Limpar o ID mesmo em caso de erro
           this.consultaSelecionadaId = null;
           this.carregarConsultas();
         }
