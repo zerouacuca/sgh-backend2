@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core'; // Adicionado 'inject'
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'; // Importa HttpHeaders
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../Services/auth-service.service'; // Importa o AuthService
 
 interface Consulta {
   id: number;
@@ -42,6 +43,11 @@ interface Paciente {
   styleUrls: ['./agendar-consulta.component.css']
 })
 export class AgendarConsultaComponent implements OnInit {
+  // Injeções
+  private http = inject(HttpClient);
+  private router = inject(Router); // Usando inject para Router também
+  private authService = inject(AuthService); // Injeta o AuthService
+
   consultas: Consulta[] = [];
   consultasFiltradas: Consulta[] = [];
   especialidadesUnicas: string[] = [];
@@ -62,7 +68,8 @@ export class AgendarConsultaComponent implements OnInit {
   filtroEspecialidade: string = '';
   ordem: string = 'data';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  // O construtor agora está vazio ou pode ser removido se não houver lógica adicional
+  constructor() {}
 
   ngOnInit(): void {
     const pacienteIdStr = localStorage.getItem('paciente_id');
@@ -73,44 +80,96 @@ export class AgendarConsultaComponent implements OnInit {
     } else {
       this.errorMessage = 'ID do paciente não encontrado. Faça login novamente.';
       this.isLoading = false;
+      console.error('ID do paciente não encontrado no localStorage.');
+      // Opcional: redirecionar para a página de login se o ID do paciente for crítico
+      this.authService.logout();
+      this.router.navigate(['/login']);
+    }
+  }
+
+  // Novo método para obter os cabeçalhos com o token JWT
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken(); // Obtém o token do AuthService
+    if (token) {
+      return new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Adiciona o token JWT
+      });
+    } else {
+      this.errorMessage = 'Token de autenticação ausente. Faça login novamente.';
+      // Redireciona para login se o token não for encontrado
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      throw new Error('Token de autenticação não encontrado.');
     }
   }
 
   private carregarSaldoPontos(): void {
     if (!this.pacienteId) return;
 
-    this.http.get<Paciente>(`http://localhost:8080/pacientes/pacientes/${this.pacienteId}`)
-      .subscribe({
-        next: (paciente) => {
-          this.saldoPontos = paciente.saldoPontos;
-        },
-        error: (err) => {
-          console.error('Erro ao carregar saldo de pontos:', err);
-        }
-      });
+    try {
+      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      this.http.get<Paciente>(`http://localhost:8080/pacientes/pacientes/${this.pacienteId}`, { headers })
+        .subscribe({
+          next: (paciente) => {
+            this.saldoPontos = paciente.saldoPontos;
+          },
+          error: (err) => {
+            console.error('Erro ao carregar saldo de pontos:', err);
+            if (err.status === 401 || err.status === 403) {
+              this.errorMessage = 'Sessão expirada ou não autorizada. Faça login novamente.';
+              this.authService.logout();
+              this.router.navigate(['/login']);
+            } else {
+              this.errorMessage = 'Erro ao carregar saldo de pontos. Tente novamente.';
+            }
+          }
+        });
+    } catch (error: any) {
+        console.error('Erro ao preparar requisição de saldo:', error.message);
+        this.errorMessage = error.message;
+    }
   }
 
   carregarConsultas(): void {
-    this.http.get<Consulta[]>('http://localhost:8080/consultas')
-      .subscribe({
-        next: (data) => {
-          this.consultas = data.filter(consulta =>
-            consulta.status === 'DISPONÍVEL' &&
-            consulta.vagasDisponiveis > 0 &&
-            consulta.profissional.status === 'ATIVO'
-          );
+    this.isLoading = true;
+    this.errorMessage = null;
 
-          this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
-          this.aplicarFiltros();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Erro ao carregar consultas:', err);
-          this.errorMessage = 'Erro ao carregar consultas disponíveis. Tente novamente.';
-          this.isLoading = false;
-        }
-      });
+    try {
+      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      this.http.get<Consulta[]>('http://localhost:8080/pacientes/consultas', { headers })
+        .subscribe({
+          next: (data) => {
+            this.consultas = data.filter(consulta =>
+              consulta.status === 'DISPONÍVEL' &&
+              consulta.vagasDisponiveis > 0 &&
+              consulta.profissional.status === 'ATIVO'
+            );
+
+            this.especialidadesUnicas = [...new Set(this.consultas.map(c => c.especialidade.nome))];
+            this.aplicarFiltros();
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('Erro ao carregar consultas:', err);
+            if (err.status === 401 || err.status === 403) {
+              this.errorMessage = 'Sessão expirada ou não autorizada. Faça login novamente.';
+              this.authService.logout();
+              this.router.navigate(['/login']);
+            } else {
+              this.errorMessage = 'Erro ao carregar consultas disponíveis. Tente novamente.';
+            }
+            this.isLoading = false;
+          }
+        });
+    } catch (error: any) {
+        console.error('Erro ao preparar requisição de consultas:', error.message);
+        this.errorMessage = error.message;
+        this.isLoading = false;
+    }
   }
+
+  // ... (métodos existentes: abrirModalPontos, fecharModalPontos, calcularValorDinheiro, confirmarAgendamentoComPontos, filtrarConsultas, filtrarPorEspecialidade, ordenarConsultas, aplicarFiltros)
 
   abrirModalPontos(consulta: Consulta): void {
     this.consultaSelecionadaId = consulta.id;
@@ -233,49 +292,60 @@ export class AgendarConsultaComponent implements OnInit {
 
     console.log('Enviando payload:', agendamento);
 
-    this.http.post('http://localhost:8080/agendamentos', agendamento, {
-      responseType: 'text'
-    }).subscribe({
-      next: (responseText) => {
-        try {
-          const response: AgendamentoResponse = JSON.parse(responseText);
-          this.successMessage = `Consulta agendada com sucesso!
-                                Pontos utilizados: ${pontosUsados} (R$ ${(pontosUsados * 5).toFixed(2)})
-                                Valor em dinheiro: R$ ${this.valorDinheiro.toFixed(2)}`;
-        } catch (e) {
-          this.successMessage = 'Agendamento realizado com sucesso!';
-        }
+    try {
+      const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
+      this.http.post('http://localhost:8080/agendamentos', agendamento, {
+        headers, // Passa os cabeçalhos
+        responseType: 'text'
+      }).subscribe({
+        next: (responseText) => {
+          try {
+            const response: AgendamentoResponse = JSON.parse(responseText);
+            this.successMessage = `Consulta agendada com sucesso!
+                                    Pontos utilizados: ${pontosUsados} (R$ ${(pontosUsados * 5).toFixed(2)})
+                                    Valor em dinheiro: R$ ${this.valorDinheiro.toFixed(2)}`;
+          } catch (e) {
+            this.successMessage = 'Agendamento realizado com sucesso!';
+          }
 
-        this.saldoPontos -= pontosUsados;
+          this.saldoPontos -= pontosUsados;
 
-        this.consultaSelecionadaId = null;
+          this.consultaSelecionadaId = null;
 
-        setTimeout(() => {
+          setTimeout(() => {
+            this.carregarConsultas();
+          }, 1000);
+        },
+        error: (err) => {
+          console.error('Erro ao agendar:', err);
+
+          if (err.status === 401 || err.status === 403) {
+            this.errorMessage = 'Sessão expirada ou não autorizada. Faça login novamente.';
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          } else if (err.status === 400) {
+            this.errorMessage = 'Dados inválidos. Verifique os campos.';
+          } else if (err.status === 404) {
+            this.errorMessage = 'Consulta não encontrada.';
+          } else if (err.status === 409) {
+            this.errorMessage = 'Você já possui um agendamento para esta consulta.';
+          } else if (err.status === 422) {
+            this.errorMessage = 'Não há vagas disponíveis para esta consulta.';
+          } else if (err.error?.message) {
+            this.errorMessage = err.error.message;
+          } else {
+            this.errorMessage = 'Erro ao realizar agendamento. Tente novamente.';
+          }
+
+          // Limpar o ID mesmo em caso de erro
+          this.consultaSelecionadaId = null;
           this.carregarConsultas();
-        }, 1000);
-      },
-      error: (err) => {
-        console.error('Erro ao agendar:', err);
-
-        if (err.status === 400) {
-          this.errorMessage = 'Dados inválidos. Verifique os campos.';
-        } else if (err.status === 404) {
-          this.errorMessage = 'Consulta não encontrada.';
-        } else if (err.status === 409) {
-          this.errorMessage = 'Você já possui um agendamento para esta consulta.';
-        } else if (err.status === 422) {
-          this.errorMessage = 'Não há vagas disponíveis para esta consulta.';
-        } else if (err.error?.message) {
-          this.errorMessage = err.error.message;
-        } else {
-          this.errorMessage = 'Erro ao realizar agendamento. Tente novamente.';
         }
-
-        // Limpar o ID mesmo em caso de erro
-        this.consultaSelecionadaId = null;
-        this.carregarConsultas();
-      }
-    });
+      });
+    } catch (error: any) {
+        console.error('Erro ao preparar requisição de agendamento:', error.message);
+        this.errorMessage = error.message;
+    }
   }
 
   converterPontosParaReais(pontos: number): string {
