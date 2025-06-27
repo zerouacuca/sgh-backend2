@@ -10,8 +10,8 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private userIdKey = 'user_id';
   private pacienteIdKey = 'paciente_id'; // Nova chave para armazenar o ID do paciente
-  private apiUrl = 'http://localhost:8082/auth/login';
-  private pacientesUrl = 'http://localhost:8081/pacientes/email'; // URL para buscar dados do paciente
+  private apiUrl = 'http://localhost:8080/public/auth/login';
+  private pacientesUrl = 'http://localhost:8080/pacientes/pacientes/email'; // URL para buscar dados do paciente
 
   constructor(
     private http: HttpClient,

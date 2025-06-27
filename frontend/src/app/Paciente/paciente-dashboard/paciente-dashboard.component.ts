@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit {
         throw new Error('ID do paciente não encontrado');
       }
 
-      const url = `http://localhost:8081/pacientes/${pacienteId}`;
+      const url = `http://localhost:8080/pacientes/pacientes/${pacienteId}`;
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${this.authService.getToken()}`
       });

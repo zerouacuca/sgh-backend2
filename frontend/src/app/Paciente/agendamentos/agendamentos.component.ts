@@ -20,7 +20,7 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
   isLoading = true;
   errorMessage: string | null = null;
 
-  private baseUrl = 'http://localhost:8083/agendamentos';
+  private baseUrl = 'http://localhost:8080/pacientes/agendamentos';
 
   ngOnInit(): void {
     const pacienteIdStr = localStorage.getItem('paciente_id');

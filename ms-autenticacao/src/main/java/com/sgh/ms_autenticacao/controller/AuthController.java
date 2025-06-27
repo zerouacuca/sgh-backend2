@@ -1,12 +1,14 @@
 package com.sgh.ms_autenticacao.controller;
 
 import com.sgh.ms_autenticacao.dto.NovoUsuarioDTO;
+import com.sgh.ms_autenticacao.dto.UserInfoResponse;
 import com.sgh.ms_autenticacao.model.Perfil;
 import com.sgh.ms_autenticacao.service.JwtService;
 import com.sgh.ms_autenticacao.service.UsuarioService;
 import lombok.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +33,23 @@ public class AuthController {
         return ResponseEntity.ok("Usuário registrado com sucesso");
     }
 
+    // NOVO ENDPOINT: /auth/userinfo
+    @GetMapping("/userinfo")
+    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT ausente ou mal formatado.");
+        }
 
+        String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
+
+        try {
+            UserInfoResponse userInfo = jwtService.extractUserClaims(token);
+            return ResponseEntity.ok(userInfo);
+        } catch (RuntimeException e) {
+            // Captura a exceção lançada pelo JwtService para token inválido/expirado
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {

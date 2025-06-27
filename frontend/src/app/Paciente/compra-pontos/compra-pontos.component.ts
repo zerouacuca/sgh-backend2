@@ -44,7 +44,7 @@ export class CompraPontosComponent implements OnInit {
   transacoes: Transacao[] = [];
   total: number = 0;
   carregando: boolean = false;
-  private apiBaseUrl = 'http://localhost:8081/pacientes';
+  private apiBaseUrl = 'http://localhost:8080/pacientes/pacientes';
   saldoPontos: number = 0;
 
   constructor(

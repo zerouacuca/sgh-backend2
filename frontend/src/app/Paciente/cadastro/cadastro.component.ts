@@ -140,7 +140,7 @@ private async enviarParaApiGateway(): Promise<void> {
     }
   };
 
-  const urlApiGateway = 'http://localhost:8081/pacientes';
+  const urlApiGateway = 'http://localhost:8080/pacientes/pacientes';
 
   const httpOptions = {
     headers: new HttpHeaders({

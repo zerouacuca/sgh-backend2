@@ -79,7 +79,7 @@ export class AgendarConsultaComponent implements OnInit {
   private carregarSaldoPontos(): void {
     if (!this.pacienteId) return;
 
-    this.http.get<Paciente>(`http://localhost:8081/pacientes/${this.pacienteId}`)
+    this.http.get<Paciente>(`http://localhost:8080/pacientes/pacientes/${this.pacienteId}`)
       .subscribe({
         next: (paciente) => {
           this.saldoPontos = paciente.saldoPontos;
@@ -91,7 +91,7 @@ export class AgendarConsultaComponent implements OnInit {
   }
 
   carregarConsultas(): void {
-    this.http.get<Consulta[]>('http://localhost:8083/consultas')
+    this.http.get<Consulta[]>('http://localhost:8080/consultas')
       .subscribe({
         next: (data) => {
           this.consultas = data.filter(consulta =>
@@ -233,7 +233,7 @@ export class AgendarConsultaComponent implements OnInit {
 
     console.log('Enviando payload:', agendamento);
 
-    this.http.post('http://localhost:8081/agendamentos', agendamento, {
+    this.http.post('http://localhost:8080/agendamentos', agendamento, {
       responseType: 'text'
     }).subscribe({
       next: (responseText) => {

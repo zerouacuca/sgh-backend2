@@ -1,19 +1,19 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
-
-
 
 const publicRoutes = require('./routes/publicRoutes');
 const funcionarioRoutes = require('./routes/funcionarioRoutes');
 const pacienteRoutes = require('./routes/pacienteRoutes');
 
-
-
-
 // Ajustado: importa o middleware auth.js
 const authMiddleware = require('./middleware/auth'); // Middleware para validar JWT e setar req.user
 const perfilMiddleware = require('./middleware/authorization'); // Middleware para verificar perfil
 
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true
+}));
 
 app.use(express.json());
 
