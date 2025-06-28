@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'; // Importa HttpHeaders
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../Services/auth-service.service'; // Importa o AuthService
+import { PacienteService } from '../../Services/paciente-service'; // Importa o PacienteService
 
 @Component({
   selector: 'app-agendamentos',
@@ -14,6 +15,7 @@ import { AuthService } from '../../Services/auth-service.service'; // Importa o 
 export class AgendamentosComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private authService = inject(AuthService); // Injeta o AuthService
+  private pacienteService = inject(PacienteService); // Injeta o PacienteService
   private destroy$ = new Subject<void>();
 
   agendamentos: any[] = [];
@@ -154,17 +156,23 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
 
     try {
       const headers = this.getAuthHeaders(); // Obtém os cabeçalhos com o token
-      this.http.put(`${this.baseUrl}/${agendamento.id}/cancelar`, {}, { headers }) // Passa os cabeçalhos
+      this.http.put(`${this.baseUrl}/${agendamento.id}/cancelar`, {}, { headers, responseType: 'text' }) // Adicionado responseType: 'text'
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => this.carregarAgendamentos(),
+          next: () => { // Este bloco será executado em respostas 2xx de sucesso
+            alert('Agendamento cancelado com sucesso!'); // Mensagem de sucesso
+            this.carregarAgendamentos(); // Atualiza a tabela
+            this.pacienteService.carregarSaldoInicial().subscribe(); // Atualiza o saldo no dashboard
+          },
           error: err => {
             console.error('Erro ao cancelar agendamento:', err);
             if (err.status === 401 || err.status === 403) {
                 alert('Sessão expirada ou não autorizada. Faça login novamente.');
                 this.authService.logout();
+                // this.router.navigate(['/login']); // Redirecionar se o router estiver injetado
             } else {
-                alert('Erro ao cancelar agendamento. Tente novamente.');
+                // Exibe o erro do backend se disponível, caso contrário, uma mensagem genérica
+                alert(`Erro ao cancelar agendamento: ${err.error?.message || 'Tente novamente.'}`);
             }
           }
         });
@@ -192,8 +200,8 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
           }
         });
     } catch (error: any) {
-        console.error('Erro ao preparar requisição:', error.message);
-        alert(error.message);
+      console.error('Erro ao preparar requisição:', error.message);
+      alert(error.message);
     }
   }
 
