@@ -77,7 +77,7 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
         .subscribe({
           next: dados => {
             this.agendamentos = dados.map(ag => this.processarAgendamento(ag));
-            this.ordenarAgendamentos();
+            this.ordenarAgendamentos(); // Chama a nova função de ordenação
             this.isLoading = false;
           },
           error: err => {
@@ -121,9 +121,23 @@ export class AgendamentosComponent implements OnInit, OnDestroy {
   }
 
   private ordenarAgendamentos(): void {
-    this.agendamentos.sort((a, b) =>
-      new Date(a.dataOriginal).getTime() - new Date(b.dataOriginal).getTime()
-    );
+    this.agendamentos.sort((a, b) => {
+      const statusA = a.status;
+      const statusB = b.status;
+
+      // Se um é CANCELADO e o outro não, o CANCELADO vai para o final
+      if (statusA === 'CANCELADO' && statusB !== 'CANCELADO') {
+        return 1; // 'a' (CANCELADO) vem depois de 'b'
+      }
+      if (statusA !== 'CANCELADO' && statusB === 'CANCELADO') {
+        return -1; // 'a' (não CANCELADO) vem antes de 'b'
+      }
+
+      // Se ambos são CANCELADO ou ambos não são CANCELADO, ordena pela data original
+      const dataA = new Date(a.dataOriginal).getTime();
+      const dataB = new Date(b.dataOriginal).getTime();
+      return dataA - dataB;
+    });
   }
 
   get agendamentosFiltrados(): any[] {
