@@ -13,7 +13,10 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     List<Consulta> findByProfissionalId(Long profissionalId);
     List<Consulta> findByEspecialidadeId(Long especialidadeId);
     List<Consulta> findByDataHoraBetween(LocalDateTime start, LocalDateTime end);
-    @Query("SELECT c FROM Consulta c WHERE c.id NOT IN (" +
-           "SELECT a.consulta.id FROM Agendamento a WHERE a.pacienteId = :pacienteId)")
-    List<Consulta> findConsultasSemAgendamentoPorPaciente(@Param("pacienteId") Long pacienteId);
+   @Query("SELECT c FROM Consulta c WHERE " +
+       "c.id NOT IN (" +
+       "  SELECT a.consulta.id FROM Agendamento a " +
+       "  WHERE a.pacienteId = :pacienteId AND a.status <> 'CANCELADO'" +
+       ")")
+    List<Consulta> findConsultasDisponiveisParaPaciente(@Param("pacienteId") Long pacienteId);
 }

@@ -98,7 +98,7 @@ public class ConsultaService {
     }
 
     public List<Consulta> listarConsultasSemAgendamentoPorPaciente(Long pacienteId) {
-        return consultaRepository.findConsultasSemAgendamentoPorPaciente(pacienteId);
+        return consultaRepository.findConsultasDisponiveisParaPaciente(pacienteId);
     }
 
     @Transactional
