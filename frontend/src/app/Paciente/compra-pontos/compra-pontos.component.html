@@ -97,7 +97,7 @@
                             <div class="text-end">
                                 <div class="fw-bold"
                                      [ngClass]="{'text-success': transacao.tipo === 'CREDITO', 'text-danger': transacao.tipo === 'DEBITO'}">
-                                    {{ transacao.tipo === 'CREDITO' ? '+' : '-' }} {{ transacao.valor }} pts
+                                    {{ transacao.tipo === 'DEBITO' ? '-' : '+' }} {{ transacao.valor }} pts
                                 </div>
                                 <div class="small text-muted">
                                     {{ pontosParaReais(transacao.valor) }}

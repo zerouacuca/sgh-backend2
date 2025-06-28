@@ -4,8 +4,8 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../Services/auth-service.service';
-import { PacienteService } from '../../Services/paciente-service'; // Importa PacienteService
 import { Observable } from 'rxjs'; // Importar Observable
+import { PacienteService } from '../../Services/paciente-service'; // Importa PacienteService
 
 interface Consulta {
   id: number;
@@ -142,6 +142,8 @@ export class AgendarConsultaComponent implements OnInit {
   private carregarEspecialidades(): void {
     try {
       const headers = this.getAuthHeaders();
+      // O endpoint para especialidades era 'http://localhost:8080/especialidades' no backend
+      // Se ele está sob '/pacientes' no seu gateway, ajuste aqui.
       this.http.get<EspecialidadeResponse[]>('http://localhost:8080/pacientes/especialidades', { headers })
         .subscribe({
           next: (data) => {
@@ -169,9 +171,16 @@ export class AgendarConsultaComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
+    if (!this.pacienteId) {
+      this.errorMessage = 'ID do paciente não disponível para carregar consultas.';
+      this.isLoading = false;
+      return;
+    }
+
     try {
       const headers = this.getAuthHeaders();
-      this.http.get<Consulta[]>('http://localhost:8080/pacientes/consultas', { headers })
+      // LINHA CORRIGIDA AQUI: Uso de crases para template literal e o endpoint com pacienteId
+      this.http.get<Consulta[]>(`http://localhost:8080/pacientes/consultas/disponiveis-para-paciente/${this.pacienteId}`, { headers })
         .subscribe({
           next: (data) => {
             this.consultas = data.filter(consulta =>

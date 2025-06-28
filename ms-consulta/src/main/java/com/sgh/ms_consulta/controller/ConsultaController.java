@@ -59,5 +59,11 @@ public class ConsultaController {
         return ResponseEntity.ok(consultas);
     }
 
+     // Endpoint para listar consultas nas quais o paciente NÃO tem agendamento
+    @GetMapping("/disponiveis-para-paciente/{pacienteId}")
+    public ResponseEntity<List<Consulta>> listarConsultasDisponiveisParaPaciente(@PathVariable Long pacienteId) {
+        List<Consulta> consultas = consultaService.listarConsultasSemAgendamentoPorPaciente(pacienteId);
+        return ResponseEntity.ok(consultas);
+    }
     
 }

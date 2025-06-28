@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 
 import com.sgh.ms_consulta.model.*;
 import com.sgh.ms_consulta.repository.AgendamentoRepository;
@@ -15,6 +16,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -94,6 +97,9 @@ public class ConsultaService {
         return consultaRepository.save(consulta);
     }
 
+    public List<Consulta> listarConsultasSemAgendamentoPorPaciente(Long pacienteId) {
+        return consultaRepository.findConsultasSemAgendamentoPorPaciente(pacienteId);
+    }
 
     @Transactional
     public Consulta finalizarConsulta(Long id) {
@@ -130,4 +136,5 @@ public class ConsultaService {
     public List<Consulta> listarPorEspecialidade(Long especialidadeId) {
         return consultaRepository.findByEspecialidadeId(especialidadeId);
     }
+
 }

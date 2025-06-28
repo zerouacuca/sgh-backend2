@@ -34,6 +34,20 @@ router.get('/auth/validate', async (req, res) => {
   }
 });
 
+// GET /consultas/disponiveis-para-paciente/:pacienteId
+// Lista todas as consultas nas quais o paciente NÃO tem agendamento
+router.get('/consultas/disponiveis-para-paciente/:pacienteId', async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${APPOINTMENT_SERVICE_URL}/consultas/disponiveis-para-paciente/${req.params.pacienteId}`
+    );
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Erro ao listar consultas disponíveis para paciente:", error.message);
+    res.status(error.response?.status || 500).send("Erro ao listar consultas disponíveis para paciente.");
+  }
+});
+
 // POST /pacientes : Criar paciente
 router.post('/pacientes', async (req, res) => {
   try {

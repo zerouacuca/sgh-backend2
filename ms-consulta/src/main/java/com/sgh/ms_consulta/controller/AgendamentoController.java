@@ -59,5 +59,5 @@ public class AgendamentoController {
         String mensagem = agendamentoService.fazerCheckIn(agendamentoId);
         return ResponseEntity.ok(mensagem);
     }
-
+    
 }
